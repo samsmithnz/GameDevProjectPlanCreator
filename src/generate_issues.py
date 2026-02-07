@@ -40,37 +40,27 @@ class IssueGenerator:
         issues = []
         features = self.design_data['features']
         
-        # Always include core mechanics
-        issues.extend(self.templates['categories']['core_mechanics']['templates'])
+        # Always include programming - core mechanics are fundamental
+        issues.extend(self.templates['categories']['programming']['templates'])
         
-        # Add AI issues if needed
-        if features.get('ai'):
-            issues.extend(self.templates['categories']['ai_systems']['templates'])
-        
-        # Always add UI/UX
-        issues.extend(self.templates['categories']['ui_ux']['templates'])
+        # Always add art - UI/UX and graphics are essential
+        issues.extend(self.templates['categories']['art']['templates'])
         
         # Add audio if needed
         if features.get('audio'):
             issues.extend(self.templates['categories']['audio']['templates'])
         
-        # Always add graphics/rendering
-        issues.extend(self.templates['categories']['graphics_rendering']['templates'])
+        # Always add QA - testing is essential
+        issues.extend(self.templates['categories']['qa']['templates'])
         
-        # Always add level design
-        issues.extend(self.templates['categories']['level_design']['templates'])
+        # Always add documentation
+        issues.extend(self.templates['categories']['documentation']['templates'])
         
-        # Add progression if specified
-        if features.get('progression'):
-            issues.extend(self.templates['categories']['player_progression']['templates'])
+        # Always add marketing - launch preparation is important
+        issues.extend(self.templates['categories']['marketing']['templates'])
         
-        # Add multiplayer if needed
-        if features.get('multiplayer'):
-            issues.extend(self.templates['categories']['multiplayer']['templates'])
-        
-        # Always add testing and polish
-        issues.extend(self.templates['categories']['testing_qa']['templates'])
-        issues.extend(self.templates['categories']['polish']['templates'])
+        # Always add business - project management is essential
+        issues.extend(self.templates['categories']['business']['templates'])
         
         return issues
     

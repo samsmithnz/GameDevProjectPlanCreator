@@ -34,77 +34,67 @@ The following types of issues from TBS were **too specific** and not included:
 
 ### Generic Patterns Extracted
 
-Instead, we extracted these **generic categories** that apply to most games:
+Instead, we extracted these **7 broad categories** that apply to most games and align with project milestones:
 
-1. **Core Mechanics** (from TBS: game loop, turn system, state management)
-   - Game loop
-   - Turn/round system
-   - Player controller
-   - Save/load functionality
+1. **programming** (from TBS: core mechanics, AI, networking, progression)
+   - Game loop and state management
+   - AI systems and pathfinding
+   - Player progression and leveling
+   - Networking and multiplayer
+   - Level loading systems
 
-2. **AI Systems** (from TBS: AI foundations, pathfinding)
-   - Basic AI foundations
-   - Pathfinding
-   - Difficulty levels
-
-3. **UI/UX** (from TBS: menus, controls)
-   - Main menu
-   - HUD elements
-   - Pause menu
-   - Settings
-
-4. **Graphics & Rendering** (from TBS: rendering, camera)
-   - Rendering pipeline
-   - Camera system
-   - Visual effects
-   - Animations
-
-5. **Level Design** (from TBS: maps, scenarios)
-   - Level loader
-   - Tutorial level
-   - Level progression
-
-6. **Player Progression** (from TBS: levels, abilities)
-   - Experience/leveling
-   - Skill trees
-   - Achievements
-
-7. **Testing & QA** (from TBS: tests, optimization)
-   - Unit tests
-   - Automated testing
-   - Debug mode
-   - Performance optimization
-
-8. **Polish & Launch** (from TBS: final touches)
+2. **art** (from TBS: UI, graphics, rendering)
+   - UI/UX design (menus, HUD)
+   - Graphics rendering pipeline
+   - Visual effects and animations
+   - Camera systems
    - Loading screens
-   - Analytics
-   - Credits
-   - Bug fixing
+
+3. **audio** (from TBS: sound systems)
+   - Audio system manager
+   - Sound effects
+   - Background music
+
+4. **QA** (from TBS: testing, optimization, polish)
+   - Unit tests and automated testing
+   - Debug tools
+   - Performance optimization
+   - Bug fixing and stability
+
+5. **documentation**
+   - Game design documentation
+   - Technical documentation
+   - Credits and acknowledgments
+
+6. **marketing** (from TBS: launch activities)
    - Marketing materials
+   - Social media presence
+   - Press kits
+
+7. **business**
+   - Analytics and metrics
+   - Project management
+   - Development roadmap
 
 ## How the Tool Decides What to Include
 
 The tool uses the **design document** to determine which categories to include:
 
 ### 1. Always Included
-- Core Mechanics
+- programming (core mechanics essential for any game)
 - UI/UX
 - Graphics & Rendering
 - Level Design
 - Testing & QA
-- Polish & Launch
+- art (visual design essential for any game)
+- QA (testing essential for quality)
+- documentation (important for project clarity)
+- marketing (launch preparation important)
+- business (project management essential)
 
 ### 2. Conditionally Included (Based on Design Doc)
 
-**AI Systems** - Included if design doc has:
-```markdown
-### AI Requirements
-- [x] Enemy AI needed
-- [x] NPC AI needed
-- [x] Pathfinding required
-```
-
-**Audio** - Included if design doc has:
+**audio** - Included if design doc has:
 ```markdown
 ### Audio Requirements
 - [x] Background music
@@ -112,20 +102,7 @@ The tool uses the **design document** to determine which categories to include:
 - [x] Voice acting
 ```
 
-**Player Progression** - Included if design doc has:
-```markdown
-### Player Progression
-- [x] Level-up system
-- [x] Skill trees
-- [x] Achievements
-```
-
-**Multiplayer** - Included if design doc has:
-```markdown
-### Multiplayer
-- [x] Local multiplayer
-- [x] Online multiplayer
-```
+Note: With the 7-category structure, most categories are always included as they represent essential aspects of game development. The conditional logic primarily affects the audio category.
 
 ## Examples
 

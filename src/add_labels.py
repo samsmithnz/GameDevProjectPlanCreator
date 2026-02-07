@@ -11,23 +11,17 @@ from github import Github, GithubException
 
 
 # Standard label definitions for game development
+# Aligned with 7 milestone categories
 STANDARD_LABELS = [
     {'name': 'enhancement', 'color': 'a2eeef', 'description': 'New feature or request'},
     {'name': 'bug', 'color': 'd73a4a', 'description': 'Something isn\'t working'},
-    {'name': 'documentation', 'color': '0075ca', 'description': 'Improvements or additions to documentation'},
-    {'name': 'core', 'color': 'e99695', 'description': 'Core game mechanics'},
-    {'name': 'ai', 'color': 'fbca04', 'description': 'AI and NPC systems'},
-    {'name': 'ui', 'color': 'bfdadc', 'description': 'User interface'},
-    {'name': 'audio', 'color': 'f9d0c4', 'description': 'Sound and music'},
-    {'name': 'graphics', 'color': 'c5def5', 'description': 'Graphics and rendering'},
-    {'name': 'level-design', 'color': 'd4c5f9', 'description': 'Level and map design'},
-    {'name': 'progression', 'color': 'fef2c0', 'description': 'Player progression systems'},
-    {'name': 'multiplayer', 'color': 'c2e0c6', 'description': 'Multiplayer features'},
-    {'name': 'testing', 'color': 'ededed', 'description': 'Testing and QA'},
-    {'name': 'optimization', 'color': 'ff7619', 'description': 'Performance optimization'},
-    {'name': 'polish', 'color': 'ffa94d', 'description': 'Polish and refinement'},
-    {'name': 'analytics', 'color': '006b75', 'description': 'Analytics and metrics'},
+    {'name': 'programming', 'color': '0e8a16', 'description': 'Programming and technical implementation'},
+    {'name': 'art', 'color': 'fbca04', 'description': 'Visual art, graphics, and UI design'},
+    {'name': 'audio', 'color': 'f9d0c4', 'description': 'Sound effects and music'},
+    {'name': 'qa', 'color': 'ededed', 'description': 'Quality assurance, testing, and debugging'},
+    {'name': 'documentation', 'color': '0075ca', 'description': 'Documentation and technical writing'},
     {'name': 'marketing', 'color': 'ff69b4', 'description': 'Marketing and promotion'},
+    {'name': 'business', 'color': 'd4c5f9', 'description': 'Business operations and analytics'},
 ]
 
 

@@ -124,37 +124,30 @@ See `examples/sample-design-doc.md` for a complete example.
 
 ## Issue Categories
 
-The tool generates issues in the following categories:
+The tool generates issues organized into **7 broad categories** that align with project milestones:
 
-1. **Core Mechanics** - Fundamental gameplay systems
-   - Game loop, player controls, state management
+1. **programming** - Programming and technical implementation
+   - Core mechanics, AI systems, gameplay logic, networking, level systems, player progression
 
-2. **AI Systems** - Artificial intelligence (if needed)
-   - Pathfinding, decision-making, difficulty levels
+2. **art** - Visual art, graphics, and UI design
+   - UI/UX design, rendering pipeline, camera systems, visual effects, animations, loading screens
 
-3. **UI/UX** - User interface elements
-   - Menus, HUD, settings, accessibility
+3. **audio** - Sound effects and music
+   - Audio system, sound effects, background music, volume controls
 
-4. **Audio** - Sound and music (if needed)
-   - Sound effects, background music, audio manager
+4. **QA** - Quality assurance, testing, and debugging
+   - Unit tests, automated testing, debug tools, performance optimization, bug fixing
 
-5. **Graphics & Rendering** - Visual systems
-   - Rendering pipeline, camera, animations, effects
+5. **documentation** - Documentation and technical writing
+   - Game design docs, technical documentation, credits
 
-6. **Level Design** - Maps and levels
-   - Level loader, tutorial, progression
+6. **marketing** - Marketing and promotion
+   - Marketing materials, social media, press kits
 
-7. **Player Progression** - Character advancement (if needed)
-   - Experience system, skill trees, achievements
+7. **business** - Business operations and analytics
+   - Analytics, project management, development roadmap
 
-8. **Multiplayer** - Networking (if needed)
-   - Lobby, synchronization, matchmaking
-
-9. **Testing & QA** - Quality assurance
-   - Unit tests, debugging, optimization
-
-10. **Polish & Launch** - Final preparation
-    - Loading screens, analytics, marketing materials
+These categories translate directly to GitHub milestones and labels for organized project tracking.
 
 ## Python Modules
 
