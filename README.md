@@ -239,6 +239,8 @@ MIT License - see LICENSE file for details
 
 This tool was created to generalize the project planning approach used in the [TurnBasedEngine](https://github.com/samsmithnz/TurnBasedEngine) repository. The TBS project had comprehensive issue tracking for game development, and this tool extracts those learnings into a reusable system for any game project.
 
+For details on how game-specific items from TBS were filtered and generalized, see [docs/filtering-game-specific-items.md](docs/filtering-game-specific-items.md).
+
 ## Related Projects
 
 - [TurnBasedEngine](https://github.com/samsmithnz/TurnBasedEngine) - The turn-based strategy game that inspired this tool
