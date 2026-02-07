@@ -1,0 +1,36 @@
+{
+  "name": "gamedevprojectplancreator",
+  "version": "1.0.0",
+  "description": "A project that uses Copilot to create all of the issues needed to design, develop and launch a video game, adding all of the issues to a project board.",
+  "main": "src/GameDevProjectPlanCreator.js",
+  "bin": {
+    "gamedev-planner": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "example": "node src/cli.js examples/sample-design-doc.md --export-md output/project-plan.md --export-json output/issues.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samsmithnz/GameDevProjectPlanCreator.git"
+  },
+  "keywords": [
+    "game-development",
+    "project-planning",
+    "github",
+    "issues",
+    "project-management"
+  ],
+  "author": "Sam Smith",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/samsmithnz/GameDevProjectPlanCreator/issues"
+  },
+  "homepage": "https://github.com/samsmithnz/GameDevProjectPlanCreator#readme",
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "dotenv": "^17.2.4"
+  }
+}
