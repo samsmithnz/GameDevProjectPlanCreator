@@ -2,6 +2,8 @@
 
 A Python tool that automatically generates comprehensive GitHub issues for game development projects based on a design document. This tool helps game developers quickly set up project boards with all necessary tasks, from core mechanics to launch preparation.
 
+**✨ Use with any repository** - No forking required! Clone this tool once and use it to generate issues on any GitHub repository you have access to.
+
 ## Features
 
 - 📝 Parse game design documents to extract requirements
@@ -13,15 +15,17 @@ A Python tool that automatically generates comprehensive GitHub issues for game 
 
 ## Installation
 
+**No forking required!** This tool can be used to generate issues for any GitHub repository you have access to.
+
 ### Prerequisites
 
 - Python 3.7 or higher
 - pip
-- GitHub account (for creating issues)
+- GitHub Personal Access Token with `repo` scope (for creating issues on your repositories)
 
 ### Setup
 
-1. Clone the repository:
+1. Clone this repository (one-time setup):
 ```bash
 git clone https://github.com/samsmithnz/GameDevProjectPlanCreator.git
 cd GameDevProjectPlanCreator
@@ -32,7 +36,7 @@ cd GameDevProjectPlanCreator
 pip install -r requirements.txt
 ```
 
-3. (Optional) For GitHub integration, set your token as an environment variable:
+3. Set up your GitHub token:
 ```bash
 export GITHUB_TOKEN=your_github_personal_access_token
 ```
@@ -44,39 +48,61 @@ To create a GitHub personal access token:
 
 ## Usage
 
+**Target any repository**: All commands support `--owner` and `--repo` parameters to target any GitHub repository you have access to.
+
 ### Export Issues to Files
 
 Export to JSON:
 ```bash
-python src/export_issues.py examples/sample-design-doc.md --json output/issues.json
+python src/export_issues.py your-design-doc.md --json output/issues.json
 ```
 
 Export to Markdown:
 ```bash
-python src/export_issues.py examples/sample-design-doc.md --markdown output/project-plan.md
+python src/export_issues.py your-design-doc.md --markdown output/project-plan.md
 ```
 
 Export to both:
 ```bash
-python src/export_issues.py examples/sample-design-doc.md --json output/issues.json --markdown output/plan.md
+python src/export_issues.py your-design-doc.md --json output/issues.json --markdown output/plan.md
 ```
 
-### Add Labels to Repository
+### Add Labels to Your Repository
 
-Add standard game development labels to your GitHub repository:
+Add standard game development labels to **any** GitHub repository:
 
 ```bash
 export GITHUB_TOKEN=your_token_here
-python src/add_labels.py --owner your-username --repo your-repo
+python src/add_labels.py --owner your-username --repo your-game-project
 ```
 
-### Create GitHub Issues
+### Create GitHub Issues on Your Repository
 
-Create issues directly on your GitHub repository:
+Create issues directly on **any** GitHub repository you have access to:
 
 ```bash
 export GITHUB_TOKEN=your_token_here
-python src/create_issues.py examples/sample-design-doc.md --owner your-username --repo your-repo
+python src/create_issues.py your-design-doc.md --owner your-username --repo your-game-project
+```
+
+### Complete Workflow Example
+
+```bash
+# 1. One-time setup
+git clone https://github.com/samsmithnz/GameDevProjectPlanCreator.git
+cd GameDevProjectPlanCreator
+pip install -r requirements.txt
+
+# 2. Create your game design document (use template as starting point)
+cp examples/design-doc-template.md ~/my-game-design.md
+# Edit ~/my-game-design.md with your game details
+
+# 3. Add labels to your repository
+export GITHUB_TOKEN=your_token_here
+python src/add_labels.py --owner your-username --repo your-game-project
+
+# 4. Create issues on your repository
+python src/create_issues.py ~/my-game-design.md --owner your-username --repo your-game-project
 ```
 
 ### Parse Design Document Only
