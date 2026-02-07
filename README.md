@@ -1,6 +1,6 @@
 # GameDevProjectPlanCreator
 
-A tool that automatically generates comprehensive GitHub issues for game development projects based on a design document. This tool helps game developers quickly set up project boards with all necessary tasks, from core mechanics to launch preparation.
+A Python tool that automatically generates comprehensive GitHub issues for game development projects based on a design document. This tool helps game developers quickly set up project boards with all necessary tasks, from core mechanics to launch preparation.
 
 ## Features
 
@@ -8,15 +8,15 @@ A tool that automatically generates comprehensive GitHub issues for game develop
 - 🎯 Generate categorized GitHub issues based on game features
 - 🏷️ Automatic labeling and organization
 - 📊 Export to JSON or Markdown
-- 🚀 Direct GitHub integration to create issues
+- 🚀 Direct GitHub integration to create issues and labels
 - 🎮 Generic templates applicable to any game genre
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js 14.x or higher
-- npm or yarn
+- Python 3.7 or higher
+- pip
 - GitHub account (for creating issues)
 
 ### Setup
@@ -29,44 +29,45 @@ cd GameDevProjectPlanCreator
 
 2. Install dependencies:
 ```bash
-npm install
+pip install -r requirements.txt
 ```
 
-3. (Optional) For GitHub integration, create a `.env` file:
+3. (Optional) For GitHub integration, set your token as an environment variable:
 ```bash
-GITHUB_TOKEN=your_github_personal_access_token
+export GITHUB_TOKEN=your_github_personal_access_token
 ```
 
 To create a GitHub personal access token:
 - Go to GitHub Settings → Developer settings → Personal access tokens
 - Generate new token with `repo` scope
-- Copy the token and add it to your `.env` file
+- Copy the token and set it as GITHUB_TOKEN environment variable
 
 ## Usage
 
-### Basic Usage
-
-Generate issues from a design document:
-
-```bash
-node src/cli.js examples/sample-design-doc.md --export-md project-plan.md
-```
-
-### Export Options
+### Export Issues to Files
 
 Export to JSON:
 ```bash
-node src/cli.js path/to/design-doc.md --export-json issues.json
+python src/export_issues.py examples/sample-design-doc.md --json output/issues.json
 ```
 
 Export to Markdown:
 ```bash
-node src/cli.js path/to/design-doc.md --export-md project-plan.md
+python src/export_issues.py examples/sample-design-doc.md --markdown output/project-plan.md
 ```
 
 Export to both:
 ```bash
-node src/cli.js path/to/design-doc.md --export-json issues.json --export-md plan.md
+python src/export_issues.py examples/sample-design-doc.md --json output/issues.json --markdown output/plan.md
+```
+
+### Add Labels to Repository
+
+Add standard game development labels to your GitHub repository:
+
+```bash
+export GITHUB_TOKEN=your_token_here
+python src/add_labels.py --owner your-username --repo your-repo
 ```
 
 ### Create GitHub Issues
@@ -75,17 +76,15 @@ Create issues directly on your GitHub repository:
 
 ```bash
 export GITHUB_TOKEN=your_token_here
-node src/cli.js path/to/design-doc.md --create-issues --owner your-username --repo your-repo
+python src/create_issues.py examples/sample-design-doc.md --owner your-username --repo your-repo
 ```
 
-### Using npm scripts
+### Parse Design Document Only
+
+To just parse and see what features are extracted:
 
 ```bash
-# Run the example
-npm run example
-
-# Use the CLI directly
-npm start -- examples/sample-design-doc.md --export-md output.md
+python src/parse_design_doc.py examples/sample-design-doc.md
 ```
 
 ## Design Document Format
@@ -157,29 +156,40 @@ The tool generates issues in the following categories:
 10. **Polish & Launch** - Final preparation
     - Loading screens, analytics, marketing materials
 
-## Programmatic Usage
+## Python Modules
 
-You can also use this tool programmatically in your own Node.js scripts:
+The tool is organized into separate Python scripts:
 
-```javascript
-const GameDevProjectPlanCreator = require('./src/GameDevProjectPlanCreator');
+### `parse_design_doc.py`
+Parses game design documents and extracts features and requirements.
 
-const creator = new GameDevProjectPlanCreator({
-  githubToken: 'your_token_here' // Optional
-});
+```python
+from parse_design_doc import DesignDocParser
 
-// Parse design document
-creator.parseDesignDoc('path/to/design-doc.md');
-
-// Generate issues
-const issues = creator.generateIssues();
-
-// Export to file
-creator.exportToMarkdown(issues, 'project-plan.md');
-
-// Or create on GitHub
-await creator.createGitHubIssues('owner', 'repo', issues);
+parser = DesignDocParser('path/to/design-doc.md')
+data = parser.parse()
+print(data['features'])
 ```
+
+### `generate_issues.py`
+Generates issues based on design document and templates.
+
+```python
+from generate_issues import IssueGenerator
+
+generator = IssueGenerator()
+generator.set_design_doc('path/to/design-doc.md')
+issues = generator.generate_issues()
+```
+
+### `create_issues.py`
+Creates issues on GitHub repository (requires GITHUB_TOKEN).
+
+### `add_labels.py`
+Adds standard game development labels to repository (requires GITHUB_TOKEN).
+
+### `export_issues.py`
+Exports issues to JSON or Markdown files.
 
 ## Customization
 
@@ -210,15 +220,18 @@ Edit `templates/issue-templates.json` to add your own issue templates or modify 
 ```
 GameDevProjectPlanCreator/
 ├── src/
-│   ├── GameDevProjectPlanCreator.js  # Main class
-│   └── cli.js                         # Command-line interface
+│   ├── parse_design_doc.py    # Design document parser
+│   ├── generate_issues.py     # Issue generator
+│   ├── create_issues.py       # GitHub issue creation
+│   ├── add_labels.py          # GitHub label management
+│   └── export_issues.py       # Export to JSON/Markdown
 ├── templates/
-│   └── issue-templates.json           # Issue templates
+│   └── issue-templates.json   # Issue templates
 ├── examples/
-│   ├── design-doc-template.md         # Template for creating design docs
-│   └── sample-design-doc.md           # Example design document
-├── output/                            # Generated files (created on demand)
-├── package.json
+│   ├── design-doc-template.md # Template for creating design docs
+│   └── sample-design-doc.md   # Example design document
+├── output/                    # Generated files (created on demand)
+├── requirements.txt           # Python dependencies
 └── README.md
 ```
 

@@ -108,13 +108,13 @@ git clone https://github.com/your-username/GameDevProjectPlanCreator.git
 cd GameDevProjectPlanCreator
 
 # Install dependencies
-npm install
+pip install -r requirements.txt
 
 # Test the tool
-npm run example
+python src/export_issues.py examples/sample-design-doc.md --markdown output/test.md
 
 # Run with custom design doc
-node src/cli.js path/to/your-design-doc.md --export-md output.md
+python src/export_issues.py path/to/your-design-doc.md --markdown output.md
 ```
 
 ## Ideas for Contributions
