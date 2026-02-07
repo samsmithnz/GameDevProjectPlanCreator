@@ -74,18 +74,34 @@ const options = {
 for (let i = 1; i < args.length; i++) {
   switch (args[i]) {
     case '--export-json':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        console.error('Error: --export-json requires a path argument');
+        process.exit(1);
+      }
       options.exportJson = args[++i];
       break;
     case '--export-md':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        console.error('Error: --export-md requires a path argument');
+        process.exit(1);
+      }
       options.exportMd = args[++i];
       break;
     case '--create-issues':
       options.createIssues = true;
       break;
     case '--owner':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        console.error('Error: --owner requires a value');
+        process.exit(1);
+      }
       options.owner = args[++i];
       break;
     case '--repo':
+      if (i + 1 >= args.length || args[i + 1].startsWith('--')) {
+        console.error('Error: --repo requires a value');
+        process.exit(1);
+      }
       options.repo = args[++i];
       break;
   }

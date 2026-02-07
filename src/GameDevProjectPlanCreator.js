@@ -189,7 +189,8 @@ class GameDevProjectPlanCreator {
         createdIssues.push(response.data);
         console.log(`✓ Created issue #${response.data.number}: ${issue.title}`);
         
-        // Rate limiting - wait a bit between requests
+        // Rate limiting - wait 500ms between requests to avoid GitHub API rate limits
+        // This ensures we don't exceed GitHub's secondary rate limits for issue creation
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`✗ Failed to create issue "${issue.title}":`, error.message);
@@ -235,8 +236,12 @@ class GameDevProjectPlanCreator {
    * Export issues to a JSON file
    */
   exportToJson(issues, outputPath) {
-    fs.writeFileSync(outputPath, JSON.stringify(issues, null, 2));
-    console.log(`Exported ${issues.length} issues to ${outputPath}`);
+    try {
+      fs.writeFileSync(outputPath, JSON.stringify(issues, null, 2));
+      console.log(`Exported ${issues.length} issues to ${outputPath}`);
+    } catch (error) {
+      throw new Error(`Failed to export to JSON: ${error.message}`);
+    }
   }
 
   /**
@@ -279,8 +284,12 @@ class GameDevProjectPlanCreator {
       }
     }
 
-    fs.writeFileSync(outputPath, markdown);
-    console.log(`Exported ${issues.length} issues to ${outputPath}`);
+    try {
+      fs.writeFileSync(outputPath, markdown);
+      console.log(`Exported ${issues.length} issues to ${outputPath}`);
+    } catch (error) {
+      throw new Error(`Failed to export to Markdown: ${error.message}`);
+    }
   }
 }
 
