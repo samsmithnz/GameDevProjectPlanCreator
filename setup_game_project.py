@@ -268,8 +268,8 @@ def setup_milestones(repo, dry_run: bool = False):
     return {m.title: m for m in repo.get_milestones(state='all')}
 
 
-def setup_project(repo, dry_run: bool = False):
-    """Create or find project board."""
+def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
+    """Create or find project board with columns for each milestone."""
     print("📊 Step 3: Setting up project board")
     print("-" * 65)
     
@@ -277,30 +277,66 @@ def setup_project(repo, dry_run: bool = False):
     
     if dry_run:
         print(f"  Would create project board: '{project_name}'")
-        print(f"  Visibility would match repository (private/public)")
+        print(f"  Visibility would match repository ({'private' if hasattr(repo, 'private') and repo.private else 'public'})")
+        print(f"  Would create {len(MILESTONES)} columns (swimlanes):")
+        for milestone_def in MILESTONES:
+            print(f"    - {milestone_def['title']}")
         print()
         return None
     
-    # Note: GitHub's v3 API for projects is deprecated
-    # Using v4 GraphQL API would be better but requires different setup
-    # For now, we'll just inform the user
-    print(f"  ℹ️  Project board should be created manually:")
-    print(f"     1. Go to: https://github.com/{repo.owner.login}/{repo.name}/projects")
-    print(f"     2. Create a new project named '{project_name}'")
-    print(f"     3. Set visibility to match repository ({repo.private and 'private' or 'public'})")
-    print(f"     4. Add columns for each milestone/category")
-    print()
+    # Check if project already exists
+    existing_projects = list(repo.get_projects(state='open'))
+    project = None
     
-    return None
+    for proj in existing_projects:
+        if proj.name == project_name:
+            project = proj
+            print(f"  ✓ Project already exists: '{project_name}'")
+            break
+    
+    # Create project if it doesn't exist
+    if not project:
+        project = repo.create_project(
+            name=project_name,
+            body="Automated project board for game development tasks organized by category"
+        )
+        print(f"  ✓ Created project: '{project_name}'")
+    
+    # Get existing columns
+    existing_columns = {col.name: col for col in project.get_columns()}
+    
+    # Create columns for each milestone (in order)
+    created_cols = 0
+    for milestone_def in MILESTONES:
+        col_name = milestone_def['title']
+        if col_name not in existing_columns:
+            project.create_column(name=col_name)
+            print(f"  ✓ Created column: {col_name}")
+            created_cols += 1
+        else:
+            print(f"  ✓ Column exists: {col_name}")
+    
+    if created_cols > 0:
+        print(f"\n  Created {created_cols} new columns\n")
+    else:
+        print()
+    
+    return project
 
 
-def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, dry_run: bool = False):
-    """Create issues from user stories and assign to milestones."""
-    print("📝 Step 4: Creating issues")
+def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, project, dry_run: bool = False):
+    """Create issues from user stories, assign to milestones, and add to project."""
+    print("📝 Step 4: Creating issues and adding to project")
     print("-" * 65)
     
     successful = 0
     failed = 0
+    
+    # Get project columns if project exists
+    column_map = {}
+    if project and not dry_run:
+        columns = list(project.get_columns())
+        column_map = {col.name: col for col in columns}
     
     for story in user_stories:
         try:
@@ -308,12 +344,14 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, dry_
                 print(f"  Would create: {story.title}")
                 print(f"    Labels: {', '.join(story.labels)}")
                 print(f"    Milestone: {story.milestone}")
+                print(f"    Project column: {story.milestone}")
                 print(f"    Criteria: {len(story.acceptance_criteria)} items")
                 successful += 1
             else:
                 # Get milestone object
                 milestone_obj = milestone_map.get(story.milestone)
                 
+                # Create the issue
                 issue = repo.create_issue(
                     title=story.title,
                     body=story.get_body(),
@@ -321,6 +359,13 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, dry_
                     milestone=milestone_obj
                 )
                 print(f"  ✓ Created #{issue.number}: {story.title}")
+                
+                # Add issue to project board in appropriate column
+                if project and story.milestone in column_map:
+                    column = column_map[story.milestone]
+                    column.create_card(content_id=issue.id, content_type="Issue")
+                    print(f"    → Added to project column: {story.milestone}")
+                
                 successful += 1
                 
                 # Rate limiting
@@ -329,7 +374,11 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, dry_
             print(f"  ✗ Failed: {story.title} - {str(e)}")
             failed += 1
     
-    print(f"\n  Issues: {successful} created, {failed} failed\n")
+    print(f"\n  Issues: {successful} created, {failed} failed")
+    if project and not dry_run:
+        print(f"  All issues added to project board\n")
+    else:
+        print()
     return successful, failed
 
 
@@ -434,13 +483,13 @@ def main():
     if not args.dry_run:
         setup_labels(repo, dry_run=False)
         milestone_map = setup_milestones(repo, dry_run=False)
-        setup_project(repo, dry_run=False)
-        successful, failed = create_issues(repo, user_stories, milestone_map, dry_run=False)
+        project = setup_project(repo, milestone_map, dry_run=False)
+        successful, failed = create_issues(repo, user_stories, milestone_map, project, dry_run=False)
     else:
         setup_labels(None, dry_run=True)
-        setup_milestones(None, dry_run=True)
-        setup_project(None, dry_run=True)
-        successful, failed = create_issues(None, user_stories, {}, dry_run=True)
+        milestone_map = setup_milestones(None, dry_run=True)
+        project = setup_project(None, milestone_map, dry_run=True)
+        successful, failed = create_issues(None, user_stories, {}, None, dry_run=True)
     
     # Print final summary
     print("=" * 65)

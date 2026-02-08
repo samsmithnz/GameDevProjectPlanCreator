@@ -88,8 +88,10 @@ The setup script performs these steps:
 1. **Validates inputs** - Checks design doc exists, token is set, repo is accessible
 2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, programming, art, audio, QA, documentation, marketing, business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
-4. **Provides project guidance** - Instructions for manually creating a project board  
-5. **Creates issues** - Parses user stories and creates GitHub issues with proper labels and milestones
+4. **Creates project board** - Automatically creates a GitHub Project with visibility matching the repository (public/private)
+5. **Creates project columns** - Adds 7 columns/swimlanes (one for each milestone/category)
+6. **Creates issues** - Parses user stories and creates GitHub issues with proper labels and milestones
+7. **Assigns issues to project** - Automatically adds each issue to the project board in the appropriate column
 
 ### Design Document Format
 
@@ -167,7 +169,8 @@ python setup_game_project.py --design-doc my-rpg-game.md --owner myusername --re
 # - All issues created from user stories
 # - 9 standardized labels
 # - 7 milestones (one per category)
-# - Instructions for creating project board
+# - GitHub Project board with 7 columns/swimlanes
+# - All issues organized in project board by category
 ```
 
 ## Credits
