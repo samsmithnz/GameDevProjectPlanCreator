@@ -39,6 +39,16 @@ MILESTONES = [
     {'title': 'business', 'description': 'Business operations and analytics'},
 ]
 
+# Kanban workflow columns for the project board
+PROJECT_COLUMNS = [
+    {'name': 'Backlog', 'description': "This work hasn't been started"},
+    {'name': 'On deck', 'description': 'This work is prioritized and ready to be worked on next'},
+    {'name': 'In progress', 'description': 'This work is actively being worked on'},
+    {'name': 'Blocked', 'description': 'This work is blocked and cannot finish'},
+    {'name': 'In review', 'description': 'This work is done, and ready for review/QA'},
+    {'name': 'Done', 'description': 'This work has been completed'},
+]
+
 # Standard labels aligned with milestones
 STANDARD_LABELS = [
     {'name': 'enhancement', 'color': 'a2eeef', 'description': 'New feature or request'},
@@ -269,7 +279,7 @@ def setup_milestones(repo, dry_run: bool = False):
 
 
 def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
-    """Create or find project board with columns for each milestone."""
+    """Create or find project board with Kanban workflow columns."""
     print("📊 Step 3: Setting up project board")
     print("-" * 65)
     
@@ -278,9 +288,9 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
     if dry_run:
         print(f"  Would create project board: '{project_name}'")
         print(f"  Visibility would match repository ({'private' if hasattr(repo, 'private') and repo.private else 'public'})")
-        print(f"  Would create {len(MILESTONES)} columns (swimlanes):")
-        for milestone_def in MILESTONES:
-            print(f"    - {milestone_def['title']}")
+        print(f"  Would create {len(PROJECT_COLUMNS)} workflow columns:")
+        for col_def in PROJECT_COLUMNS:
+            print(f"    - {col_def['name']}: {col_def['description']}")
         print()
         return None
     
@@ -298,18 +308,20 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
     if not project:
         project = repo.create_project(
             name=project_name,
-            body="Automated project board for game development tasks organized by category"
+            body="Kanban board for game development tasks with workflow stages"
         )
         print(f"  ✓ Created project: '{project_name}'")
     
     # Get existing columns
     existing_columns = {col.name: col for col in project.get_columns()}
     
-    # Create columns for each milestone (in order)
+    # Create workflow columns (in order)
     created_cols = 0
-    for milestone_def in MILESTONES:
-        col_name = milestone_def['title']
+    for col_def in PROJECT_COLUMNS:
+        col_name = col_def['name']
         if col_name not in existing_columns:
+            # Note: GitHub API doesn't support setting column colors or WIP limits via REST API
+            # These need to be set manually in the GitHub UI after creation
             project.create_column(name=col_name)
             print(f"  ✓ Created column: {col_name}")
             created_cols += 1
@@ -317,7 +329,14 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
             print(f"  ✓ Column exists: {col_name}")
     
     if created_cols > 0:
-        print(f"\n  Created {created_cols} new columns\n")
+        print(f"\n  Created {created_cols} new workflow columns")
+        print(f"  ⚠️  Note: Column colors and WIP limits must be set manually in GitHub UI:")
+        print(f"     - Backlog (blue, no max)")
+        print(f"     - On deck (yellow, max 5)")
+        print(f"     - In progress (green, max 3)")
+        print(f"     - Blocked (red, max 5)")
+        print(f"     - In review (pink, max 5)")
+        print(f"     - Done (purple, no max)\n")
     else:
         print()
     
@@ -325,18 +344,21 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
 
 
 def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, project, dry_run: bool = False):
-    """Create issues from user stories, assign to milestones, and add to project."""
+    """Create issues from user stories, assign to milestones, and add to project Backlog."""
     print("📝 Step 4: Creating issues and adding to project")
     print("-" * 65)
     
     successful = 0
     failed = 0
     
-    # Get project columns if project exists
-    column_map = {}
+    # Get project columns if project exists - find the Backlog column
+    backlog_column = None
     if project and not dry_run:
         columns = list(project.get_columns())
-        column_map = {col.name: col for col in columns}
+        for col in columns:
+            if col.name == 'Backlog':
+                backlog_column = col
+                break
     
     for story in user_stories:
         try:
@@ -344,7 +366,7 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, proj
                 print(f"  Would create: {story.title}")
                 print(f"    Labels: {', '.join(story.labels)}")
                 print(f"    Milestone: {story.milestone}")
-                print(f"    Project column: {story.milestone}")
+                print(f"    Project column: Backlog")
                 print(f"    Criteria: {len(story.acceptance_criteria)} items")
                 successful += 1
             else:
@@ -360,11 +382,10 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, proj
                 )
                 print(f"  ✓ Created #{issue.number}: {story.title}")
                 
-                # Add issue to project board in appropriate column
-                if project and story.milestone in column_map:
-                    column = column_map[story.milestone]
-                    column.create_card(content_id=issue.id, content_type="Issue")
-                    print(f"    → Added to project column: {story.milestone}")
+                # Add issue to project board Backlog column
+                if backlog_column:
+                    backlog_column.create_card(content_id=issue.id, content_type="Issue")
+                    print(f"    → Added to Backlog")
                 
                 successful += 1
                 
@@ -375,8 +396,8 @@ def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, proj
             failed += 1
     
     print(f"\n  Issues: {successful} created, {failed} failed")
-    if project and not dry_run:
-        print(f"  All issues added to project board\n")
+    if backlog_column and not dry_run:
+        print(f"  All issues added to Backlog column\n")
     else:
         print()
     return successful, failed

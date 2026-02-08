@@ -89,9 +89,17 @@ The setup script performs these steps:
 2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, programming, art, audio, QA, documentation, marketing, business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
 4. **Creates project board** - Automatically creates a GitHub Project with visibility matching the repository (public/private)
-5. **Creates project columns** - Adds 7 columns/swimlanes (one for each milestone/category)
+5. **Creates workflow columns** - Adds 6 Kanban workflow columns:
+   - **Backlog** - Work that hasn't been started (no max, blue)
+   - **On deck** - Work prioritized and ready next (max 5, yellow)
+   - **In progress** - Work actively being worked on (max 3, green)
+   - **Blocked** - Work that is blocked (max 5, red)
+   - **In review** - Work ready for review/QA (max 5, pink)
+   - **Done** - Completed work (no max, purple)
 6. **Creates issues** - Parses user stories and creates GitHub issues with proper labels and milestones
-7. **Assigns issues to project** - Automatically adds each issue to the project board in the appropriate column
+7. **Assigns issues to Backlog** - Automatically adds each issue to the project board's Backlog column
+
+**Note:** Column colors and WIP (Work In Progress) limits must be set manually in the GitHub UI after the project is created.
 
 ### Design Document Format
 
@@ -169,8 +177,14 @@ python setup_game_project.py --design-doc my-rpg-game.md --owner myusername --re
 # - All issues created from user stories
 # - 9 standardized labels
 # - 7 milestones (one per category)
-# - GitHub Project board with 7 columns/swimlanes
-# - All issues organized in project board by category
+# - GitHub Project board with 6 Kanban workflow columns
+# - All issues added to Backlog column
+# 
+# Next steps in GitHub UI:
+# - Set column colors: Backlog (blue), On deck (yellow), In progress (green), 
+#   Blocked (red), In review (pink), Done (purple)
+# - Set WIP limits: On deck (5), In progress (3), Blocked (5), In review (5)
+# - Move issues through workflow as work progresses
 ```
 
 ## Credits
