@@ -400,16 +400,14 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
         print(f"  ✓ Linked project to repository")
         
     except Exception as e:
-        # If project creation fails, it might already exist
-        # We'll continue anyway - user can manually provide project info if needed
+        # If project creation fails, continue with other setup steps
+        # Projects can be created manually in GitHub UI if needed
         error_msg = str(e)
-        if "already exists" in error_msg.lower() or "duplicate" in error_msg.lower():
-            print(f"  ! Project '{project_name}' may already exist")
-            print(f"  ! Please ensure you have the 'project' scope in your token")
-            print(f"  ! Skipping project creation and continuing with other setup...")
-        else:
-            print(f"  ! Warning: Could not create project: {error_msg}")
-            print(f"  ! Continuing with labels, milestones, and issues setup...")
+        print(f"  ! Warning: Could not create project: {error_msg}")
+        print(f"  ! This may be due to:")
+        print(f"     - Project with this name already exists")
+        print(f"     - Insufficient token permissions (need 'project' scope)")
+        print(f"  ! Continuing with labels, milestones, and issues setup...")
     
     # Get existing fields (we need the Status field)
     if project_id:
