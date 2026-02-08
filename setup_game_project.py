@@ -484,9 +484,8 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             
             # Use updateProjectV2Field to replace options on the existing Status field
             mutation_update_field = """
-            mutation($projectId: ID!, $fieldId: ID!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
+            mutation($fieldId: ID!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
               updateProjectV2Field(input: {
-                projectId: $projectId,
                 fieldId: $fieldId,
                 singleSelectOptions: $options
               }) {
@@ -505,7 +504,6 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             """
             
             field_result = run_graphql_query(token, mutation_update_field, {
-                'projectId': project_id,
                 'fieldId': status_field_id,
                 'options': status_options_list
             })
