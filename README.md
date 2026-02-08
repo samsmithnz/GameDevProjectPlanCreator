@@ -48,24 +48,86 @@ To create a GitHub personal access token:
 
 ## Usage
 
+This tool supports two approaches for creating game project issues:
+
+### Approach 1: Quick Template-Based (Simple)
+
+Use pre-defined generic templates to quickly generate standard game development issues.
+
+**Best for**: Quick project setup, standard game development workflows
+
+### Approach 2: Detailed User Stories (TBS Pattern)
+
+Create detailed user stories in a markdown file, then parse them to create issues. Follows the pattern from the TBS project.
+
+**Best for**: Custom game requirements, detailed planning, specific user stories
+
+---
+
+### Quick Template-Based Approach
+
 **Target any repository**: All commands support `--owner` and `--repo` parameters to target any GitHub repository you have access to.
 
-### Export Issues to Files
+#### Export Issues to Files
 
 Export to JSON:
 ```bash
-python src/export_issues.py your-design-doc.md --json output/issues.json
+python src/export_issues.py examples/sample-design-doc.md --json output/issues.json
 ```
 
 Export to Markdown:
 ```bash
-python src/export_issues.py your-design-doc.md --markdown output/project-plan.md
+python src/export_issues.py examples/sample-design-doc.md --markdown output/project-plan.md
 ```
 
 Export to both:
 ```bash
-python src/export_issues.py your-design-doc.md --json output/issues.json --markdown output/plan.md
+python src/export_issues.py examples/sample-design-doc.md --json output/issues.json --markdown output/plan.md
 ```
+
+#### Create Issues from Templates
+
+Create issues directly on **any** GitHub repository:
+
+```bash
+export GITHUB_TOKEN=your_token_here
+python src/create_issues.py examples/sample-design-doc.md --owner your-username --repo your-game-project
+```
+
+---
+
+### Detailed User Stories Approach (TBS Pattern)
+
+#### Create Your User Stories Document
+
+1. Copy the user stories template:
+```bash
+cp examples/user-stories-template.md my-game-user-stories.md
+```
+
+2. Edit the file and add your game's user stories in this format:
+```markdown
+- **US-PROG-001**: As a player, I want to move my character so that I can explore
+  - Labels: `programming`, `gameplay`
+  - Acceptance Criteria:
+    - Character moves smoothly
+    - Movement respects obstacles
+    - Animation plays correctly
+```
+
+#### Create Issues from User Stories
+
+```bash
+export GITHUB_TOKEN=your_token_here
+python src/create_issues_from_user_stories.py my-game-user-stories.md --owner your-username --repo your-game-project
+```
+
+Preview without creating (dry run):
+```bash
+python src/create_issues_from_user_stories.py my-game-user-stories.md --owner your-username --repo your-game-project --dry-run
+```
+
+---
 
 ### Add Labels to Your Repository
 
@@ -76,16 +138,7 @@ export GITHUB_TOKEN=your_token_here
 python src/add_labels.py --owner your-username --repo your-game-project
 ```
 
-### Create GitHub Issues on Your Repository
-
-Create issues directly on **any** GitHub repository you have access to:
-
-```bash
-export GITHUB_TOKEN=your_token_here
-python src/create_issues.py your-design-doc.md --owner your-username --repo your-game-project
-```
-
-### Complete Workflow Example
+### Complete Workflow Example (Template Approach)
 
 ```bash
 # 1. One-time setup
