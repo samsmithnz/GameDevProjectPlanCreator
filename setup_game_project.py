@@ -360,7 +360,7 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     query($owner: String!) {
       repositoryOwner(login: $owner) {
         ... on User {
-          projectsV2(first: 100) {
+          projectsV2(first: 20) {
             nodes {
               id
               title
@@ -369,7 +369,7 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
           }
         }
         ... on Organization {
-          projectsV2(first: 100) {
+          projectsV2(first: 20) {
             nodes {
               id
               title

@@ -162,7 +162,11 @@ The tool requires a GitHub Personal Access Token (PAT) with appropriate permissi
    export GITHUB_TOKEN=your_generated_token
    ```
 
-**Note**: Fine-grained tokens provide more granular control and are more secure. For this tool, make sure to grant **Organization → Projects** (read/write) permission, as projects are created at the owner level (user or organization) and then linked to repositories.
+**Note**: Fine-grained tokens provide more granular control and are more secure. For this tool, make sure to grant:
+- **For personal repositories**: Account permissions → Projects (read/write)
+- **For organization repositories**: Organization permissions → Projects (read/write)
+
+Projects are created at the owner level (user or organization) and then linked to repositories, so you need owner-level project permissions rather than repository-level permissions.
 
 ## Usage
 
