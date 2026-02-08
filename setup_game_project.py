@@ -459,64 +459,63 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             break
     
     # Create Status field if it doesn't exist
+    option_map = {}
+    
     if not status_field_id:
-        mutation_create_field = """
-        mutation($projectId: ID!, $name: String!, $dataType: ProjectV2CustomFieldType!) {
-          createProjectV2Field(input: {projectId: $projectId, name: $name, dataType: $dataType}) {
+        # Build array of status options with colors
+        status_options_list = []
+        for col_def in PROJECT_COLUMNS:
+            status_options_list.append({
+                'name': col_def['name'],
+                'color': col_def['color'],
+                'description': col_def['description']
+            })
+        
+        # Create field with all options at once (GitHub API requires this)
+        mutation_field_with_options = """
+        mutation($projectId: ID!, $fieldName: String!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
+          createProjectV2Field(input: {
+            projectId: $projectId, 
+            name: $fieldName, 
+            dataType: SINGLE_SELECT,
+            singleSelectOptions: $options
+          }) {
             projectV2Field {
               ... on ProjectV2SingleSelectField {
                 id
+                name
+                options {
+                  id
+                  name
+                }
               }
             }
           }
         }
         """
         
-        field_result = run_graphql_query(token, mutation_create_field, {
+        field_result = run_graphql_query(token, mutation_field_with_options, {
             'projectId': project_id,
-            'name': 'Status',
-            'dataType': 'SINGLE_SELECT'
+            'fieldName': 'Status',
+            'options': status_options_list
         })
         
         status_field_id = field_result['createProjectV2Field']['projectV2Field']['id']
-        print(f"  ✓ Created Status field")
-    
-    # Create/update status field options with colors
-    option_map = {}
-    created_options = 0
-    
-    for col_def in PROJECT_COLUMNS:
-        col_name = col_def['name']
         
-        if col_name in existing_options:
+        # Build option map from created field
+        for option in field_result['createProjectV2Field']['projectV2Field']['options']:
+            option_map[option['name']] = option['id']
+        
+        print(f"  ✓ Created Status field with {len(PROJECT_COLUMNS)} workflow options")
+        color_list = ', '.join([f"{c['name']} ({c['color'].lower()})" for c in PROJECT_COLUMNS])
+        print(f"  ✓ Automatically set colors: {color_list}")
+    else:
+        # Field exists, use existing options
+        for col_name in existing_options:
             option_map[col_name] = existing_options[col_name]
-            print(f"  ✓ Status option exists: {col_name}")
-        else:
-            mutation_create_option = """
-            mutation($projectId: ID!, $fieldId: ID!, $name: String!, $color: ProjectV2SingleSelectFieldOptionColor!) {
-              createProjectV2FieldOption(input: {projectId: $projectId, fieldId: $fieldId, name: $name, color: $color}) {
-                projectV2FieldOption {
-                  id
-                  name
-                }
-              }
-            }
-            """
-            
-            option_result = run_graphql_query(token, mutation_create_option, {
-                'projectId': project_id,
-                'fieldId': status_field_id,
-                'name': col_name,
-                'color': col_def['color']
-            })
-            
-            option_id = option_result['createProjectV2FieldOption']['projectV2FieldOption']['id']
-            option_map[col_name] = option_id
-            print(f"  ✓ Created status option: {col_name} ({col_def['color'].lower()})")
-            created_options += 1
+        print(f"  ✓ Status field already exists with {len(existing_options)} options")
     
-    if created_options > 0:
-        print(f"\n  Created {created_options} new workflow status options with colors")
+    if not dry_run:
         print(f"  ⚠️  Note: WIP limits must still be set manually in GitHub UI:")
         for col_def in PROJECT_COLUMNS:
             if 'limit' in col_def:
