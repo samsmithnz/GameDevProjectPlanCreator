@@ -684,12 +684,12 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                     # Set the Status field value to Backlog for the newly added item
                     if backlog_option_id and field_id:
                         status_update_mutation = """
-                        mutation($pId: ID!, $iId: ID!, $fId: ID!, $optId: String!) {
+                        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                           updateProjectV2ItemFieldValue(input: {
-                            projectId: $pId,
-                            itemId: $iId,
-                            fieldId: $fId,
-                            value: {singleSelectOptionId: $optId}
+                            projectId: $projectId,
+                            itemId: $itemId,
+                            fieldId: $fieldId,
+                            value: {singleSelectOptionId: $optionId}
                           }) {
                             projectV2Item {
                               id
@@ -699,10 +699,10 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                         """
                         
                         run_graphql_query(token, status_update_mutation, {
-                            'pId': project_id,
-                            'iId': newly_added_item_id,
-                            'fId': field_id,
-                            'optId': backlog_option_id
+                            'projectId': project_id,
+                            'itemId': newly_added_item_id,
+                            'fieldId': field_id,
+                            'optionId': backlog_option_id
                         })
                         print(f"    → Added to project with Backlog status")
                     else:
