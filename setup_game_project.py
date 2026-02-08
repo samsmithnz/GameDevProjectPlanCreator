@@ -455,87 +455,30 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
         
         fields_data = run_graphql_query(token, query_fields, {'projectId': project_id})
         
-        # Find Status field - we need to create our own custom one, not use GitHub's default
+        # Locate the Status field that GitHub creates by default
         status_field_id = None
-        existing_options = {}
+        available_options = {}
         
-        # Check if our custom Status field with Backlog exists
-        has_custom_status = False
+        # Search through fields to find Status
         for field in fields_data['node']['fields']['nodes']:
             if field and field.get('name') == 'Status':
-                # Check if this has our custom 'Backlog' option (not GitHub's default 'Todo')
-                for option in field.get('options', []):
-                    if option['name'] == 'Backlog':
-                        has_custom_status = True
-                        status_field_id = field['id']
-                        for opt in field.get('options', []):
-                            existing_options[opt['name']] = opt['id']
-                        break
+                status_field_id = field['id']
+                for opt in field.get('options', []):
+                    available_options[opt['name']] = opt['id']
                 break
         
-        # Create Status field if it doesn't exist or doesn't have our custom options
-        option_map = {}
+        # Map options for use
+        option_map = available_options
         
-        if not has_custom_status:
-            # Build array of status options with colors
-            status_options_list = []
-            for col_def in PROJECT_COLUMNS:
-                status_options_list.append({
-                    'name': col_def['name'],
-                    'color': col_def['color'],
-                    'description': col_def['description']
-                })
-            
-            # Create field with all options at once (GitHub API requires this)
-            mutation_field_with_options = """
-            mutation($projectId: ID!, $fieldName: String!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
-              createProjectV2Field(input: {
-                projectId: $projectId, 
-                name: $fieldName, 
-                dataType: SINGLE_SELECT,
-                singleSelectOptions: $options
-              }) {
-                projectV2Field {
-                  ... on ProjectV2SingleSelectField {
-                    id
-                    name
-                    options {
-                      id
-                      name
-                    }
-                  }
-                }
-              }
-            }
-            """
-            
-            field_result = run_graphql_query(token, mutation_field_with_options, {
-                'projectId': project_id,
-                'fieldName': 'Status',
-                'options': status_options_list
-            })
-            
-            status_field_id = field_result['createProjectV2Field']['projectV2Field']['id']
-            
-            # Build option map from created field
-            for option in field_result['createProjectV2Field']['projectV2Field']['options']:
-                option_map[option['name']] = option['id']
-            
-            print(f"  ✓ Created Status field with {len(PROJECT_COLUMNS)} workflow options")
-            color_list = ', '.join([f"{c['name']} ({c['color'].lower()})" for c in PROJECT_COLUMNS])
-            print(f"  ✓ Automatically set colors: {color_list}")
+        # Display what was found
+        if status_field_id:
+            opts_list = list(available_options.keys())
+            print(f"  ✓ Found Status field with options: {', '.join(opts_list)}")
         else:
-            # Field exists, use existing options
-            for col_name in existing_options:
-                option_map[col_name] = existing_options[col_name]
-            print(f"  ✓ Status field already exists with {len(existing_options)} options")
+            print(f"  ⚠️  Warning: Status field not found in project")
         
         if not dry_run:
-            print(f"  ⚠️  Note: WIP limits must still be set manually in GitHub UI:")
-            for col_def in PROJECT_COLUMNS:
-                if 'limit' in col_def:
-                    print(f"     - {col_def['name']}: max {col_def['limit']}")
-            print(f"  ⚠️  Note: Default view name 'View 1' and board layout must be configured manually in GitHub UI")
+            print(f"  ⚠️  Manual steps: Rename 'View 1', set Board layout, configure swimlanes")
             print()
         else:
             print()
@@ -617,15 +560,15 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
 
 
 def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, project_id: str, field_id: str, status_options: Dict, token: str, dry_run: bool = False):
-    """Create issues from user stories, assign to milestones, and add to ProjectV2 with Backlog status."""
+    """Create issues, assign to milestones, add to ProjectV2, set to Todo status."""
     print("📝 Step 4: Creating issues and adding to project")
     print("-" * 65)
     
     successful = 0
     failed = 0
     
-    # Get the Backlog option ID
-    backlog_option_id = status_options.get('Backlog') if status_options else None
+    # Get Todo option ID from GitHub's default status options
+    default_status_id = status_options.get('Todo') if status_options else None
     
     for story in user_stories:
         try:
@@ -633,7 +576,7 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                 print(f"  Would create: {story.title}")
                 print(f"    Labels: {', '.join(story.labels)}")
                 print(f"    Milestone: {story.milestone}")
-                print(f"    Project status: Backlog")
+                print(f"    Project status: Todo")
                 print(f"    Criteria: {len(story.acceptance_criteria)} items")
                 successful += 1
             else:
@@ -650,7 +593,7 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                 print(f"  ✓ Created #{issue.number}: {story.title}")
                 
                 # Add issue to ProjectV2 using GraphQL
-                if project_id and backlog_option_id:
+                if project_id and default_status_id:
                     # Get issue node ID
                     query_issue_id = """
                     query($owner: String!, $repo: String!, $number: Int!) {
@@ -688,8 +631,8 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                     
                     newly_added_item_id = add_result['addProjectV2ItemById']['item']['id']
                     
-                    # Set the Status field value to Backlog for the newly added item
-                    if backlog_option_id and field_id:
+                    # Set the Status field value to Todo for the newly added item
+                    if default_status_id and field_id:
                         status_update_mutation = """
                         mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                           updateProjectV2ItemFieldValue(input: {
@@ -709,9 +652,9 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                             'projectId': project_id,
                             'itemId': newly_added_item_id,
                             'fieldId': field_id,
-                            'optionId': backlog_option_id
+                            'optionId': default_status_id
                         })
-                        print(f"    → Added to project with Backlog status")
+                        print(f"    → Added to project with Todo status")
                     else:
                         print(f"    → Added to project")
                 
@@ -725,7 +668,7 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
     
     print(f"\n  Issues: {successful} created, {failed} failed")
     if project_id and not dry_run:
-        print(f"  All issues added to ProjectV2 with Backlog status\n")
+        print(f"  All issues added to ProjectV2 with Todo status\n")
     else:
         print()
     return successful, failed
