@@ -336,6 +336,7 @@ python setup_game_project.py --owner myusername --repo my-rpg-game
 # Manual steps still required in GitHub UI (API limitations):
 # - Rename default view from "View 1" to "Backlog" (or your preferred name)
 # - Set view layout to "Board" format
+# - Set swimlanes grouping to "Milestone" (or "Status" for Kanban workflow)
 # - Set WIP limits: On deck (5), In progress (3), Blocked (5), In review (5)
 # - Move issues through workflow as work progresses
 ```
