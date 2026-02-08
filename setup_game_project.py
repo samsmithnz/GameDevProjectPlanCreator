@@ -620,6 +620,11 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
     # Get the Backlog option ID
     backlog_option_id = status_options.get('Backlog') if status_options else None
     
+    # Debug: show what we received
+    if not dry_run:
+        print(f"  Debug: project_id={project_id is not None}, field_id={field_id is not None}, status_options={list(status_options.keys()) if status_options else None}, backlog_option_id={backlog_option_id is not None}")
+        print()
+    
     for story in user_stories:
         try:
             if dry_run:
