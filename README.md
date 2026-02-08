@@ -85,9 +85,9 @@ python setup_game_project.py --owner your-username --repo your-game-repo
 That's it! Your GitHub repository will now have:
 - ✅ Labels (9 standardized)
 - ✅ Milestones (7 categories)
-- ✅ Project board with Kanban workflow (6 status columns with colors)
+- ✅ Project board with Kanban workflow (default Todo/In Progress/Done statuses)
 - ✅ Issues created from your customized templates
-- ✅ All issues assigned to project in Backlog
+- ✅ All issues assigned to project in Todo status
 
 ## Installation
 
@@ -193,17 +193,14 @@ The setup script performs these steps:
 2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, Programming, Art, Audio, QA, Documentation, Marketing, Business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
 4. **Creates project board** - Automatically creates a GitHub Projects V2 board using GraphQL API
-5. **Creates workflow status options with colors** - Adds 6 Kanban workflow status options:
-   - **Backlog** - Work that hasn't been started (blue color)
-   - **On deck** - Work prioritized and ready next (yellow color)
-   - **In progress** - Work actively being worked on (green color)
-   - **Blocked** - Work that is blocked (red color)
-   - **In review** - Work ready for review/QA (pink color)
-   - **Done** - Completed work (purple color)
+5. **Uses GitHub's default workflow** - Leverages the built-in Status field:
+   - **Todo** - Initial status for new issues (default)
+   - **In Progress** - For work being actively developed
+   - **Done** - For completed work
 6. **Creates issues** - Reads templates from JSON and creates GitHub issues with proper labels and milestones
-7. **Assigns issues to project** - Automatically adds each issue to the Projects V2 board with Backlog status
+7. **Assigns issues to project** - Automatically adds each issue to the Projects V2 board with Todo status
 
-**Note:** WIP (Work In Progress) limits must still be set manually in the GitHub UI (max 5 for On deck, max 3 for In progress, max 5 for Blocked, max 5 for In review). Colors are set automatically via GraphQL API.
+**Note:** You can customize status options, WIP limits, board layout, and swimlane grouping in the GitHub UI after running the script.
 
 ### Using GitHub Copilot to Customize Issue Templates
 
@@ -330,14 +327,14 @@ python setup_game_project.py --owner myusername --repo my-rpg-game
 # - 7 milestones (one per category)
 # - GitHub Projects V2 board with 6 Kanban workflow status options
 # - Project visibility matches repository (public/private)
-# - Status colors automatically set (blue, yellow, green, red, pink, purple)
-# - All issues added to project with Backlog status
+# - All issues added to project with Todo status
 # 
-# Manual steps still required in GitHub UI (API limitations):
-# - Rename default view from "View 1" to "Backlog" (or your preferred name)
+# Manual steps (optional) in GitHub UI:
+# - Rename "View 1" to your preferred name
 # - Set view layout to "Board" format
-# - Set swimlanes grouping to "Milestone" (or "Status" for Kanban workflow)
-# - Set WIP limits: On deck (5), In progress (3), Blocked (5), In review (5)
+# - Set swimlanes grouping to "Milestone" or "Status"
+# - Add custom status options if needed (Blocked, In Review, etc.)
+# - Set WIP limits on status columns
 # - Move issues through workflow as work progresses
 ```
 

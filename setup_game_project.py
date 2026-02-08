@@ -322,10 +322,7 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     
     if dry_run:
         print(f"  Would create ProjectV2 board: '{project_name}'")
-        print(f"  Would create {len(PROJECT_COLUMNS)} workflow columns with colors and WIP limits:")
-        for col_def in PROJECT_COLUMNS:
-            limit_info = f", WIP limit: {col_def['limit']}" if 'limit' in col_def else ", no WIP limit"
-            print(f"    - {col_def['name']} ({col_def['color']}{limit_info})")
+        print(f"  Would use GitHub's default Status field (Todo, In Progress, Done)")
         print()
         return None, None, None
     
