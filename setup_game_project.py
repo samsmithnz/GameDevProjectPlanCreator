@@ -474,8 +474,11 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
         if status_field_id:
             opts_list = list(available_options.keys())
             print(f"  ✓ Found Status field with options: {', '.join(opts_list)}")
+            # Warn if Todo option is not available
+            if 'Todo' not in available_options:
+                print(f"  ⚠️  Warning: 'Todo' status option not found - issues may not be assigned a default status")
         else:
-            print(f"  ⚠️  Warning: Status field not found in project")
+            print(f"  ⚠️  Warning: Status field not found - ensure project was created with default fields enabled")
         
         if not dry_run:
             print(f"  ⚠️  Manual steps: Rename 'View 1', set Board layout, configure swimlanes")
@@ -569,6 +572,14 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
     
     # Get Todo option ID from GitHub's default status options
     default_status_id = status_options.get('Todo') if status_options else None
+    
+    # Warn if Todo status is not available
+    if project_id and not default_status_id and not dry_run:
+        print(f"  ⚠️  Warning: 'Todo' status not found in project field options")
+        print(f"  ⚠️  Issues will be added to project without initial status set")
+        available = list(status_options.keys()) if status_options else []
+        if available:
+            print(f"  ⚠️  Available options: {', '.join(available)}")
     
     for story in user_stories:
         try:
