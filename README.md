@@ -88,18 +88,18 @@ The setup script performs these steps:
 1. **Validates inputs** - Checks design doc exists, token is set, repo is accessible
 2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, programming, art, audio, QA, documentation, marketing, business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
-4. **Creates project board** - Automatically creates a GitHub Project with visibility matching the repository (public/private)
-5. **Creates workflow columns** - Adds 6 Kanban workflow columns:
-   - **Backlog** - Work that hasn't been started (no max, blue)
-   - **On deck** - Work prioritized and ready next (max 5, yellow)
-   - **In progress** - Work actively being worked on (max 3, green)
-   - **Blocked** - Work that is blocked (max 5, red)
-   - **In review** - Work ready for review/QA (max 5, pink)
-   - **Done** - Completed work (no max, purple)
+4. **Creates project board** - Automatically creates a GitHub Projects V2 board using GraphQL API
+5. **Creates workflow status options with colors** - Adds 6 Kanban workflow status options:
+   - **Backlog** - Work that hasn't been started (blue color)
+   - **On deck** - Work prioritized and ready next (yellow color)
+   - **In progress** - Work actively being worked on (green color)
+   - **Blocked** - Work that is blocked (red color)
+   - **In review** - Work ready for review/QA (pink color)
+   - **Done** - Completed work (purple color)
 6. **Creates issues** - Parses user stories and creates GitHub issues with proper labels and milestones
-7. **Assigns issues to Backlog** - Automatically adds each issue to the project board's Backlog column
+7. **Assigns issues to project** - Automatically adds each issue to the Projects V2 board with Backlog status
 
-**Note:** Column colors and WIP (Work In Progress) limits must be set manually in the GitHub UI after the project is created.
+**Note:** WIP (Work In Progress) limits must still be set manually in the GitHub UI (max 5 for On deck, max 3 for In progress, max 5 for Blocked, max 5 for In review). Colors are set automatically via GraphQL API.
 
 ### Design Document Format
 
@@ -177,12 +177,11 @@ python setup_game_project.py --design-doc my-rpg-game.md --owner myusername --re
 # - All issues created from user stories
 # - 9 standardized labels
 # - 7 milestones (one per category)
-# - GitHub Project board with 6 Kanban workflow columns
-# - All issues added to Backlog column
+# - GitHub Projects V2 board with 6 Kanban workflow status options
+# - Status colors automatically set (blue, yellow, green, red, pink, purple)
+# - All issues added to project with Backlog status
 # 
 # Next steps in GitHub UI:
-# - Set column colors: Backlog (blue), On deck (yellow), In progress (green), 
-#   Blocked (red), In review (pink), Done (purple)
 # - Set WIP limits: On deck (5), In progress (3), Blocked (5), In review (5)
 # - Move issues through workflow as work progresses
 ```

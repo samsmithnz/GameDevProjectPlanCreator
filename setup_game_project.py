@@ -24,6 +24,8 @@ import sys
 import argparse
 import time
 import re
+import json
+import requests
 from typing import List, Dict, Tuple, Optional
 from github import Github, GithubException
 
@@ -39,14 +41,14 @@ MILESTONES = [
     {'title': 'business', 'description': 'Business operations and analytics'},
 ]
 
-# Kanban workflow columns for the project board
+# Kanban workflow columns for the project board (Projects V2)
 PROJECT_COLUMNS = [
-    {'name': 'Backlog', 'description': "This work hasn't been started"},
-    {'name': 'On deck', 'description': 'This work is prioritized and ready to be worked on next'},
-    {'name': 'In progress', 'description': 'This work is actively being worked on'},
-    {'name': 'Blocked', 'description': 'This work is blocked and cannot finish'},
-    {'name': 'In review', 'description': 'This work is done, and ready for review/QA'},
-    {'name': 'Done', 'description': 'This work has been completed'},
+    {'name': 'Backlog', 'description': "This work hasn't been started", 'color': 'BLUE'},
+    {'name': 'On deck', 'description': 'This work is prioritized and ready to be worked on next', 'color': 'YELLOW', 'limit': 5},
+    {'name': 'In progress', 'description': 'This work is actively being worked on', 'color': 'GREEN', 'limit': 3},
+    {'name': 'Blocked', 'description': 'This work is blocked and cannot finish', 'color': 'RED', 'limit': 5},
+    {'name': 'In review', 'description': 'This work is done, and ready for review/QA', 'color': 'PINK', 'limit': 5},
+    {'name': 'Done', 'description': 'This work has been completed', 'color': 'PURPLE'},
 ]
 
 # Standard labels aligned with milestones
@@ -278,8 +280,252 @@ def setup_milestones(repo, dry_run: bool = False):
     return {m.title: m for m in repo.get_milestones(state='all')}
 
 
+def run_graphql_query(token: str, query: str, variables: Dict = None) -> Dict:
+    """Execute a GraphQL query against GitHub API."""
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json',
+    }
+    
+    payload = {'query': query}
+    if variables:
+        payload['variables'] = variables
+    
+    response = requests.post(
+        'https://api.github.com/graphql',
+        headers=headers,
+        json=payload
+    )
+    
+    if response.status_code != 200:
+        raise Exception(f"GraphQL query failed: {response.status_code} - {response.text}")
+    
+    result = response.json()
+    if 'errors' in result:
+        raise Exception(f"GraphQL errors: {json.dumps(result['errors'], indent=2)}")
+    
+    return result['data']
+
+
+def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool = False):
+    """Create or find ProjectV2 board with Kanban workflow columns using GraphQL."""
+    print("📊 Step 3: Setting up project board (Projects V2)")
+    print("-" * 65)
+    
+    project_name = "Game Development Project Plan"
+    
+    if dry_run:
+        print(f"  Would create ProjectV2 board: '{project_name}'")
+        print(f"  Would create {len(PROJECT_COLUMNS)} workflow columns with colors and WIP limits:")
+        for col_def in PROJECT_COLUMNS:
+            limit_info = f", WIP limit: {col_def['limit']}" if 'limit' in col_def else ", no WIP limit"
+            print(f"    - {col_def['name']} ({col_def['color']}{limit_info})")
+        print()
+        return None, None
+    
+    # Get repository node ID
+    query_repo_id = """
+    query($owner: String!, $repo: String!) {
+      repository(owner: $owner, name: $repo) {
+        id
+        owner {
+          ... on Organization {
+            id
+          }
+          ... on User {
+            id
+          }
+        }
+      }
+    }
+    """
+    
+    repo_data = run_graphql_query(token, query_repo_id, {
+        'owner': owner,
+        'repo': repo_name
+    })
+    
+    repo_id = repo_data['repository']['id']
+    owner_id = repo_data['repository']['owner']['id']
+    
+    # Check if project already exists
+    query_existing_projects = """
+    query($owner: String!, $repo: String!) {
+      repository(owner: $owner, name: $repo) {
+        projectsV2(first: 20) {
+          nodes {
+            id
+            title
+            number
+          }
+        }
+      }
+    }
+    """
+    
+    projects_data = run_graphql_query(token, query_existing_projects, {
+        'owner': owner,
+        'repo': repo_name
+    })
+    
+    project_id = None
+    project_number = None
+    for proj in projects_data['repository']['projectsV2']['nodes']:
+        if proj['title'] == project_name:
+            project_id = proj['id']
+            project_number = proj['number']
+            print(f"  ✓ ProjectV2 already exists: '{project_name}' (#{project_number})")
+            break
+    
+    # Create project if it doesn't exist
+    if not project_id:
+        mutation_create_project = """
+        mutation($ownerId: ID!, $title: String!) {
+          createProjectV2(input: {ownerId: $ownerId, title: $title}) {
+            projectV2 {
+              id
+              title
+              number
+            }
+          }
+        }
+        """
+        
+        create_result = run_graphql_query(token, mutation_create_project, {
+            'ownerId': owner_id,
+            'title': project_name
+        })
+        
+        project_id = create_result['createProjectV2']['projectV2']['id']
+        project_number = create_result['createProjectV2']['projectV2']['number']
+        print(f"  ✓ Created ProjectV2: '{project_name}' (#{project_number})")
+        
+        # Link project to repository
+        mutation_link = """
+        mutation($projectId: ID!, $repositoryId: ID!) {
+          linkProjectV2ToRepository(input: {projectId: $projectId, repositoryId: $repositoryId}) {
+            repository {
+              id
+            }
+          }
+        }
+        """
+        
+        run_graphql_query(token, mutation_link, {
+            'projectId': project_id,
+            'repositoryId': repo_id
+        })
+        print(f"  ✓ Linked project to repository")
+    
+    # Get existing fields (we need the Status field)
+    query_fields = """
+    query($projectId: ID!) {
+      node(id: $projectId) {
+        ... on ProjectV2 {
+          fields(first: 20) {
+            nodes {
+              ... on ProjectV2SingleSelectField {
+                id
+                name
+                options {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    
+    fields_data = run_graphql_query(token, query_fields, {'projectId': project_id})
+    
+    # Find or create Status field
+    status_field_id = None
+    existing_options = {}
+    
+    for field in fields_data['node']['fields']['nodes']:
+        if field and field.get('name') == 'Status':
+            status_field_id = field['id']
+            for option in field.get('options', []):
+                existing_options[option['name']] = option['id']
+            break
+    
+    # Create Status field if it doesn't exist
+    if not status_field_id:
+        mutation_create_field = """
+        mutation($projectId: ID!, $name: String!, $dataType: ProjectV2CustomFieldType!) {
+          createProjectV2Field(input: {projectId: $projectId, name: $name, dataType: $dataType}) {
+            projectV2Field {
+              ... on ProjectV2SingleSelectField {
+                id
+              }
+            }
+          }
+        }
+        """
+        
+        field_result = run_graphql_query(token, mutation_create_field, {
+            'projectId': project_id,
+            'name': 'Status',
+            'dataType': 'SINGLE_SELECT'
+        })
+        
+        status_field_id = field_result['createProjectV2Field']['projectV2Field']['id']
+        print(f"  ✓ Created Status field")
+    
+    # Create/update status field options with colors
+    option_map = {}
+    created_options = 0
+    
+    for col_def in PROJECT_COLUMNS:
+        col_name = col_def['name']
+        
+        if col_name in existing_options:
+            option_map[col_name] = existing_options[col_name]
+            print(f"  ✓ Status option exists: {col_name}")
+        else:
+            mutation_create_option = """
+            mutation($projectId: ID!, $fieldId: ID!, $name: String!, $color: ProjectV2SingleSelectFieldOptionColor!) {
+              createProjectV2FieldOption(input: {projectId: $projectId, fieldId: $fieldId, name: $name, color: $color}) {
+                projectV2FieldOption {
+                  id
+                  name
+                }
+              }
+            }
+            """
+            
+            option_result = run_graphql_query(token, mutation_create_option, {
+                'projectId': project_id,
+                'fieldId': status_field_id,
+                'name': col_name,
+                'color': col_def['color']
+            })
+            
+            option_id = option_result['createProjectV2FieldOption']['projectV2FieldOption']['id']
+            option_map[col_name] = option_id
+            print(f"  ✓ Created status option: {col_name} ({col_def['color'].lower()})")
+            created_options += 1
+    
+    if created_options > 0:
+        print(f"\n  Created {created_options} new workflow status options with colors")
+        print(f"  ⚠️  Note: WIP limits must still be set manually in GitHub UI:")
+        for col_def in PROJECT_COLUMNS:
+            if 'limit' in col_def:
+                print(f"     - {col_def['name']}: max {col_def['limit']}")
+        print()
+    else:
+        print()
+    
+    return project_id, option_map
+
+
 def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
     """Create or find project board with Kanban workflow columns."""
+    # This function is now deprecated in favor of setup_project_v2
+    # Keeping for backwards compatibility
     print("📊 Step 3: Setting up project board")
     print("-" * 65)
     
@@ -341,6 +587,96 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
         print()
     
     return project
+
+
+
+def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, project_id: str, status_options: Dict, token: str, dry_run: bool = False):
+    """Create issues from user stories, assign to milestones, and add to ProjectV2 with Backlog status."""
+    print("📝 Step 4: Creating issues and adding to project")
+    print("-" * 65)
+    
+    successful = 0
+    failed = 0
+    
+    # Get the Backlog option ID
+    backlog_option_id = status_options.get('Backlog') if status_options else None
+    
+    for story in user_stories:
+        try:
+            if dry_run:
+                print(f"  Would create: {story.title}")
+                print(f"    Labels: {', '.join(story.labels)}")
+                print(f"    Milestone: {story.milestone}")
+                print(f"    Project status: Backlog")
+                print(f"    Criteria: {len(story.acceptance_criteria)} items")
+                successful += 1
+            else:
+                # Get milestone object
+                milestone_obj = milestone_map.get(story.milestone)
+                
+                # Create the issue using REST API
+                issue = repo.create_issue(
+                    title=story.title,
+                    body=story.get_body(),
+                    labels=story.labels,
+                    milestone=milestone_obj
+                )
+                print(f"  ✓ Created #{issue.number}: {story.title}")
+                
+                # Add issue to ProjectV2 using GraphQL
+                if project_id and backlog_option_id:
+                    # Get issue node ID
+                    query_issue_id = """
+                    query($owner: String!, $repo: String!, $number: Int!) {
+                      repository(owner: $owner, name: $repo) {
+                        issue(number: $number) {
+                          id
+                        }
+                      }
+                    }
+                    """
+                    
+                    issue_data = run_graphql_query(token, query_issue_id, {
+                        'owner': repo.owner.login,
+                        'repo': repo.name,
+                        'number': issue.number
+                    })
+                    
+                    issue_node_id = issue_data['repository']['issue']['id']
+                    
+                    # Add item to project
+                    mutation_add_item = """
+                    mutation($projectId: ID!, $contentId: ID!) {
+                      addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+                        item {
+                          id
+                        }
+                      }
+                    }
+                    """
+                    
+                    add_result = run_graphql_query(token, mutation_add_item, {
+                        'projectId': project_id,
+                        'contentId': issue_node_id
+                    })
+                    
+                    item_id = add_result['addProjectV2ItemById']['item']['id']
+                    print(f"    → Added to project (Backlog status)")
+                
+                successful += 1
+                
+                # Rate limiting
+                time.sleep(0.5)
+        except Exception as e:
+            print(f"  ✗ Failed: {story.title} - {str(e)}")
+            failed += 1
+    
+    print(f"\n  Issues: {successful} created, {failed} failed")
+    if project_id and not dry_run:
+        print(f"  All issues added to ProjectV2 with Backlog status\n")
+    else:
+        print()
+    return successful, failed
 
 
 def create_issues(repo, user_stories: List[UserStory], milestone_map: Dict, project, dry_run: bool = False):
@@ -504,13 +840,13 @@ def main():
     if not args.dry_run:
         setup_labels(repo, dry_run=False)
         milestone_map = setup_milestones(repo, dry_run=False)
-        project = setup_project(repo, milestone_map, dry_run=False)
-        successful, failed = create_issues(repo, user_stories, milestone_map, project, dry_run=False)
+        project_id, status_options = setup_project_v2(repo, token, args.owner, args.repo, dry_run=False)
+        successful, failed = create_issues_v2(repo, user_stories, milestone_map, project_id, status_options, token, dry_run=False)
     else:
         setup_labels(None, dry_run=True)
         milestone_map = setup_milestones(None, dry_run=True)
-        project = setup_project(None, milestone_map, dry_run=True)
-        successful, failed = create_issues(None, user_stories, {}, None, dry_run=True)
+        project_id, status_options = setup_project_v2(None, None, args.owner, args.repo, dry_run=True)
+        successful, failed = create_issues_v2(None, user_stories, {}, None, None, None, dry_run=True)
     
     # Print final summary
     print("=" * 65)
