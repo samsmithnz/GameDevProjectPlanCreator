@@ -354,15 +354,27 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     repo_id = repo_data['repository']['id']
     owner_id = repo_data['repository']['owner']['id']
     
-    # Check if project already exists
+    # Check if project already exists at owner level
+    # Note: We query owner's projects instead of repository's projects to avoid needing Contents permission
     query_existing_projects = """
-    query($owner: String!, $repo: String!) {
-      repository(owner: $owner, name: $repo) {
-        projectsV2(first: 20) {
-          nodes {
-            id
-            title
-            number
+    query($owner: String!) {
+      repositoryOwner(login: $owner) {
+        ... on User {
+          projectsV2(first: 100) {
+            nodes {
+              id
+              title
+              number
+            }
+          }
+        }
+        ... on Organization {
+          projectsV2(first: 100) {
+            nodes {
+              id
+              title
+              number
+            }
           }
         }
       }
@@ -370,13 +382,12 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     """
     
     projects_data = run_graphql_query(token, query_existing_projects, {
-        'owner': owner,
-        'repo': repo_name
+        'owner': owner
     })
     
     project_id = None
     project_number = None
-    for proj in projects_data['repository']['projectsV2']['nodes']:
+    for proj in projects_data['repositoryOwner']['projectsV2']['nodes']:
         if proj['title'] == project_name:
             project_id = proj['id']
             project_number = proj['number']

@@ -131,7 +131,8 @@ The tool requires a GitHub Personal Access Token (PAT) with appropriate permissi
      - Creating and managing labels
      - Reading repository information
    - ✅ **`project`** (Full control of projects) - Required for:
-     - Creating Projects V2 boards
+     - Creating Projects V2 boards at owner level
+     - Linking projects to repositories
      - Creating project fields and status options
      - Adding issues to projects
 5. Click "Generate token"
@@ -152,9 +153,8 @@ The tool requires a GitHub Personal Access Token (PAT) with appropriate permissi
 4. Under "Permissions", configure **Repository permissions**:
    - ✅ **Issues**: Read and write
    - ✅ **Metadata**: Read-only (automatically selected)
-   - ✅ **Projects**: Read and write (Note: This is for repository-level projects)
-5. Under "Permissions", configure **Organization permissions** (if creating organization-level projects):
-   - ✅ **Projects**: Read and write
+5. Under "Permissions", configure **Organization permissions** (for user or organization-level projects):
+   - ✅ **Projects**: Read and write (Note: Projects are created at owner level and linked to repositories)
 6. Click "Generate token"
 7. Copy the token immediately
 8. Set it as an environment variable:
@@ -162,7 +162,7 @@ The tool requires a GitHub Personal Access Token (PAT) with appropriate permissi
    export GITHUB_TOKEN=your_generated_token
    ```
 
-**Note**: Fine-grained tokens provide more granular control and are more secure as they can be scoped to specific repositories. However, ensure you grant access to the specific repository you want to set up.
+**Note**: Fine-grained tokens provide more granular control and are more secure. For this tool, make sure to grant **Organization → Projects** (read/write) permission, as projects are created at the owner level (user or organization) and then linked to repositories.
 
 ## Usage
 
