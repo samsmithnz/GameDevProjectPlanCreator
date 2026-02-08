@@ -329,10 +329,13 @@ python setup_game_project.py --owner myusername --repo my-rpg-game
 # - 9 standardized labels
 # - 7 milestones (one per category)
 # - GitHub Projects V2 board with 6 Kanban workflow status options
+# - Project visibility matches repository (public/private)
 # - Status colors automatically set (blue, yellow, green, red, pink, purple)
 # - All issues added to project with Backlog status
 # 
-# Next steps in GitHub UI:
+# Manual steps still required in GitHub UI (API limitations):
+# - Rename default view from "View 1" to "Backlog" (or your preferred name)
+# - Set view layout to "Board" format
 # - Set WIP limits: On deck (5), In progress (3), Blocked (5), In review (5)
 # - Move issues through workflow as work progresses
 ```

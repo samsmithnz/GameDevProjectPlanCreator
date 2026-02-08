@@ -318,7 +318,7 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     print("📊 Step 3: Setting up project board (Projects V2)")
     print("-" * 65)
     
-    project_name = "Game Development Project Plan"
+    project_name = f"{repo_name} Project Plan"
     
     if dry_run:
         print(f"  Would create ProjectV2 board: '{project_name}'")
@@ -327,13 +327,14 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             limit_info = f", WIP limit: {col_def['limit']}" if 'limit' in col_def else ", no WIP limit"
             print(f"    - {col_def['name']} ({col_def['color']}{limit_info})")
         print()
-        return None, None
+        return None, None, None
     
-    # Get repository node ID
+    # Get repository node ID and visibility
     query_repo_id = """
     query($owner: String!, $repo: String!) {
       repository(owner: $owner, name: $repo) {
         id
+        isPrivate
         owner {
           ... on Organization {
             id
@@ -353,6 +354,8 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     
     repo_id = repo_data['repository']['id']
     owner_id = repo_data['repository']['owner']['id']
+    repo_is_private = repo_data['repository']['isPrivate']
+    repo_visibility = "private" if repo_is_private else "public"
     
     # Check if project already exists at owner level
     # Create the project (skip checking for existing projects to avoid permission issues)
@@ -398,6 +401,24 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             'repositoryId': repo_id
         })
         print(f"  ✓ Linked project to repository")
+        
+        # Set project visibility to match repository
+        mutation_set_visibility = """
+        mutation($projectId: ID!, $isPublic: Boolean!) {
+          updateProjectV2(input: {projectId: $projectId, public: $isPublic}) {
+            projectV2 {
+              id
+              public
+            }
+          }
+        }
+        """
+        
+        run_graphql_query(token, mutation_set_visibility, {
+            'projectId': project_id,
+            'isPublic': not repo_is_private
+        })
+        print(f"  ✓ Set project visibility to {repo_visibility} (matching repository)")
         
     except Exception as e:
         # If project creation fails, continue with other setup steps
@@ -507,16 +528,17 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             for col_def in PROJECT_COLUMNS:
                 if 'limit' in col_def:
                     print(f"     - {col_def['name']}: max {col_def['limit']}")
+            print(f"  ⚠️  Note: Default view name 'View 1' and board layout must be configured manually in GitHub UI")
             print()
         else:
             print()
         
-        return project_id, option_map
+        return project_id, status_field_id, option_map
     else:
         # Project creation failed, return None
         print(f"  ! Project board setup skipped")
         print()
-        return None, {}
+        return None, None, {}
 
 
 def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
@@ -587,7 +609,7 @@ def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
 
 
 
-def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, project_id: str, status_options: Dict, token: str, dry_run: bool = False):
+def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, project_id: str, field_id: str, status_options: Dict, token: str, dry_run: bool = False):
     """Create issues from user stories, assign to milestones, and add to ProjectV2 with Backlog status."""
     print("📝 Step 4: Creating issues and adding to project")
     print("-" * 65)
@@ -657,8 +679,34 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
                         'contentId': issue_node_id
                     })
                     
-                    item_id = add_result['addProjectV2ItemById']['item']['id']
-                    print(f"    → Added to project (Backlog status)")
+                    newly_added_item_id = add_result['addProjectV2ItemById']['item']['id']
+                    
+                    # Set the Status field value to Backlog for the newly added item
+                    if backlog_option_id and field_id:
+                        status_update_mutation = """
+                        mutation($pId: ID!, $iId: ID!, $fId: ID!, $optId: String!) {
+                          updateProjectV2ItemFieldValue(input: {
+                            projectId: $pId,
+                            itemId: $iId,
+                            fieldId: $fId,
+                            value: {singleSelectOptionId: $optId}
+                          }) {
+                            projectV2Item {
+                              id
+                            }
+                          }
+                        }
+                        """
+                        
+                        run_graphql_query(token, status_update_mutation, {
+                            'pId': project_id,
+                            'iId': newly_added_item_id,
+                            'fId': field_id,
+                            'optId': backlog_option_id
+                        })
+                        print(f"    → Added to project with Backlog status")
+                    else:
+                        print(f"    → Added to project")
                 
                 successful += 1
                 
@@ -840,13 +888,13 @@ def main():
     if not args.dry_run:
         setup_labels(repo, dry_run=False)
         milestone_map = setup_milestones(repo, dry_run=False)
-        project_id, status_options = setup_project_v2(repo, token, args.owner, args.repo, dry_run=False)
-        successful, failed = create_issues_v2(repo, user_stories, milestone_map, project_id, status_options, token, dry_run=False)
+        proj_id, stat_field_id, stat_opts = setup_project_v2(repo, token, args.owner, args.repo, dry_run=False)
+        successful, failed = create_issues_v2(repo, user_stories, milestone_map, proj_id, stat_field_id, stat_opts, token, dry_run=False)
     else:
         setup_labels(None, dry_run=True)
         milestone_map = setup_milestones(None, dry_run=True)
-        project_id, status_options = setup_project_v2(None, None, args.owner, args.repo, dry_run=True)
-        successful, failed = create_issues_v2(None, user_stories, {}, None, None, None, dry_run=True)
+        proj_id, stat_field_id, stat_opts = setup_project_v2(None, None, args.owner, args.repo, dry_run=True)
+        successful, failed = create_issues_v2(None, user_stories, {}, None, None, None, None, dry_run=True)
     
     # Print final summary
     print("=" * 65)
