@@ -840,7 +840,7 @@ def main():
     # Confirm if not dry run
     if not args.dry_run:
         response = input(f"Proceed with setup for {args.owner}/{args.repo}? (yes/no): ")
-        if response.lower() != 'yes':
+        if response.lower() not in ['yes', 'y']:
             print("Cancelled.")
             sys.exit(0)
         print()
