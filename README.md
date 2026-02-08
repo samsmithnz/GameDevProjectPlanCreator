@@ -1,6 +1,6 @@
 # GameDevProjectPlanCreator
 
-A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards. Uses AI-powered customization via GitHub Copilot to generate game-specific issues from a design document. 
+A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards. Uses AI-powered customization via GitHub Copilot to generate game-specific issues from a design document. An example for [Tetris can be found here](https://github.com/users/samsmithnz/projects/15/views/1).
 
 **✨ Use with any repository** - No forking required! Clone this tool once and use it to set up any GitHub repository you have access to.
 
@@ -14,6 +14,8 @@ A Python tool that sets up a complete game development project on GitHub with is
 - 📋 Set up GitHub Projects V2 board with Kanban workflow
 - 🎨 Automatic status column colors (blue, yellow, green, red, pink, purple)
 - 🎮 Generic workflow applicable to any game genre
+- <img width="1629" height="1179" alt="image" src="https://github.com/user-attachments/assets/a3269fc7-ea86-4bd8-89e2-442003d27d2b" />
+
 
 ## Quick Start
 
