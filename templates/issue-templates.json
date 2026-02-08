@@ -10,8 +10,8 @@
           "labels": ["enhancement", "programming"]
         },
         {
-          "title": "Add turn/round system",
-          "body": "Implement the turn-based or real-time round management system",
+          "title": "Implement game timing system",
+          "body": "Create system for managing game timing and flow (turns, rounds, real-time updates, etc.)",
           "labels": ["enhancement", "programming"]
         },
         {
