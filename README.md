@@ -52,7 +52,12 @@ Open this repository in VS Code and use GitHub Copilot to customize the `templat
 In **GitHub Copilot Chat**, use this prompt:
 
 ```
-I have a game design document at [path-to-your-design-doc]. Please read it and update the templates/issue-templates.json file to create game-specific issues based on the design.
+Please read the game design document located at [path-to-your-design-doc]. Then, update the templates/issue-templates.json file to generate GitHub issues covering the complete project lifecycle:
+
+1. Business Setup: Company formation, legal requirements, team structure, budget planning
+2. Game Development: All technical and creative tasks needed to build the game according to the design document specifications
+3. Launch & Operations: Marketing campaigns, community management, customer support infrastructure, and post-launch maintenance
+Ensure all issues are tailored to the specific game described in the design document—reference unique features, mechanics, art style, target platforms, and other design-specific requirements when creating issue descriptions
 
 Keep the same JSON structure with 7 categories (programming, art, audio, qa, documentation, marketing, business), but customize the templates to match the specific features and requirements described in my game design document.
 
