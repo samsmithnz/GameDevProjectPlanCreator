@@ -39,7 +39,7 @@ python setup_game_project.py --design-doc my-game-user-stories.md --owner your-u
 
 - Python 3.7 or higher
 - pip
-- GitHub Personal Access Token with `repo` scope
+- GitHub Personal Access Token (Classic with `repo` and `project` scopes, OR Fine-grained with Issues and Projects permissions)
 
 ### Setup
 
@@ -59,10 +59,54 @@ pip install -r requirements.txt
 export GITHUB_TOKEN=your_github_personal_access_token
 ```
 
-To create a GitHub personal access token:
-- Go to GitHub Settings → Developer settings → Personal access tokens
-- Generate new token with `repo` scope
-- Copy the token and set it as GITHUB_TOKEN environment variable
+### Creating a GitHub Personal Access Token
+
+The tool requires a GitHub Personal Access Token (PAT) with appropriate permissions. You can use either Classic or Fine-grained tokens.
+
+#### Option 1: Classic Personal Access Token
+
+1. Go to [GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)](https://github.com/settings/tokens)
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give your token a descriptive name (e.g., "GameDevProjectPlanCreator")
+4. Select the following scopes:
+   - ✅ **`repo`** (Full control of private repositories) - Required for:
+     - Creating and managing issues
+     - Creating and managing milestones
+     - Creating and managing labels
+     - Reading repository information
+   - ✅ **`project`** (Full control of projects) - Required for:
+     - Creating Projects V2 boards
+     - Creating project fields and status options
+     - Adding issues to projects
+5. Click "Generate token"
+6. Copy the token immediately (you won't be able to see it again)
+7. Set it as an environment variable:
+   ```bash
+   export GITHUB_TOKEN=your_generated_token
+   ```
+
+#### Option 2: Fine-grained Personal Access Token
+
+1. Go to [GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)
+2. Click "Generate new token"
+3. Configure the token:
+   - **Token name**: "GameDevProjectPlanCreator"
+   - **Expiration**: Choose your preferred expiration period
+   - **Repository access**: Select "Only select repositories" and choose your game project repository
+4. Under "Permissions", configure **Repository permissions**:
+   - ✅ **Issues**: Read and write
+   - ✅ **Metadata**: Read-only (automatically selected)
+   - ✅ **Projects**: Read and write (Note: This is for repository-level projects)
+5. Under "Permissions", configure **Organization permissions** (if creating organization-level projects):
+   - ✅ **Projects**: Read and write
+6. Click "Generate token"
+7. Copy the token immediately
+8. Set it as an environment variable:
+   ```bash
+   export GITHUB_TOKEN=your_generated_token
+   ```
+
+**Note**: Fine-grained tokens provide more granular control and are more secure as they can be scoped to specific repositories. However, ensure you grant access to the specific repository you want to set up.
 
 ## Usage
 
