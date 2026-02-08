@@ -35,13 +35,13 @@ from github import Github, GithubException
 
 # 7 milestone categories for game development
 MILESTONES = [
-    {'title': 'programming', 'description': 'Programming and technical implementation'},
-    {'title': 'art', 'description': 'Visual art, graphics, and UI design'},
-    {'title': 'audio', 'description': 'Sound effects and music systems'},
+    {'title': 'Programming', 'description': 'Programming and technical implementation'},
+    {'title': 'Art', 'description': 'Visual art, graphics, and UI design'},
+    {'title': 'Audio', 'description': 'Sound effects and music systems'},
     {'title': 'QA', 'description': 'Quality assurance, testing, and debugging'},
-    {'title': 'documentation', 'description': 'Documentation and technical writing'},
-    {'title': 'marketing', 'description': 'Marketing and promotional activities'},
-    {'title': 'business', 'description': 'Business operations and analytics'},
+    {'title': 'Documentation', 'description': 'Documentation and technical writing'},
+    {'title': 'Marketing', 'description': 'Marketing and promotional activities'},
+    {'title': 'Business', 'description': 'Business operations and analytics'},
 ]
 
 # Kanban workflow columns for the project board (Projects V2)
@@ -58,13 +58,13 @@ PROJECT_COLUMNS = [
 STANDARD_LABELS = [
     {'name': 'enhancement', 'color': 'a2eeef', 'description': 'New feature or request'},
     {'name': 'bug', 'color': 'd73a4a', 'description': 'Something isn\'t working'},
-    {'name': 'programming', 'color': '0e8a16', 'description': 'Programming and technical implementation'},
-    {'name': 'art', 'color': 'fbca04', 'description': 'Visual art, graphics, and UI design'},
-    {'name': 'audio', 'color': 'f9d0c4', 'description': 'Sound effects and music'},
+    {'name': 'Programming', 'color': '0e8a16', 'description': 'Programming and technical implementation'},
+    {'name': 'Art', 'color': 'fbca04', 'description': 'Visual art, graphics, and UI design'},
+    {'name': 'Audio', 'color': 'f9d0c4', 'description': 'Sound effects and music'},
     {'name': 'QA', 'color': 'ededed', 'description': 'Quality assurance, testing, and debugging'},
-    {'name': 'documentation', 'color': '0075ca', 'description': 'Documentation and technical writing'},
-    {'name': 'marketing', 'color': 'ff69b4', 'description': 'Marketing and promotion'},
-    {'name': 'business', 'color': 'd4c5f9', 'description': 'Business operations and analytics'},
+    {'name': 'Documentation', 'color': '0075ca', 'description': 'Documentation and technical writing'},
+    {'name': 'Marketing', 'color': 'ff69b4', 'description': 'Marketing and promotion'},
+    {'name': 'Business', 'color': 'd4c5f9', 'description': 'Business operations and analytics'},
 ]
 
 
@@ -156,7 +156,7 @@ def load_issue_templates(json_file: str) -> List[UserStory]:
         if category_name not in category_counters:
             category_counters[category_name] = 1
         
-        # Map category name to code for story IDs
+        # Map category name to code for story IDs (case-insensitive)
         category_code_map = {
             'programming': 'PROG',
             'art': 'ART',

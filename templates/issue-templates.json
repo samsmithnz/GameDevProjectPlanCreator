@@ -1,254 +1,372 @@
 {
   "categories": {
-    "programming": {
-      "name": "programming",
+    "Programming": {
+      "name": "Programming",
       "description": "Programming tasks including core mechanics, AI, gameplay systems, and technical implementation",
       "templates": [
         {
           "title": "Implement core game loop",
           "body": "Create the main game loop that handles:\n- Game state management\n- Update cycle\n- Render cycle\n- Input handling",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Implement game timing system",
           "body": "Create system for managing game timing and flow (turns, rounds, real-time updates, etc.)",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Create player character controller",
           "body": "Implement player character movement and basic controls",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add game state persistence",
           "body": "Implement save/load functionality for game progress",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add basic AI foundations",
           "body": "Create the foundation for AI decision-making and behavior",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Implement AI pathfinding",
           "body": "Add pathfinding logic for AI characters to navigate the game world",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add AI difficulty levels",
           "body": "Implement different AI difficulty settings (easy, medium, hard)",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Create level/map loader",
           "body": "Implement system to load and initialize levels/maps",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Design tutorial level",
           "body": "Create introductory level to teach game mechanics",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add level progression system",
           "body": "Implement level unlocking and progression tracking",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add experience/leveling system",
           "body": "Implement character progression with experience points and levels",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Create ability/skill tree",
           "body": "Design and implement character ability progression system",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add achievement system",
           "body": "Implement achievements and tracking",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Setup networking infrastructure",
           "body": "Implement basic networking for multiplayer support",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Add lobby system",
           "body": "Create multiplayer lobby for player matchmaking",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         },
         {
           "title": "Implement player synchronization",
           "body": "Add network synchronization for player actions and state",
-          "labels": ["enhancement", "programming"]
+          "labels": [
+            "enhancement",
+            "Programming"
+          ]
         }
       ]
     },
-    "art": {
-      "name": "art",
+    "Art": {
+      "name": "Art",
       "description": "Visual art, graphics, UI design, and rendering",
       "templates": [
         {
           "title": "Design main menu",
           "body": "Create the main menu interface with:\n- Start game\n- Load game\n- Settings\n- Exit",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Add HUD elements",
           "body": "Implement heads-up display showing relevant game information",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Create pause menu",
           "body": "Add pause functionality with menu options",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Add settings menu",
           "body": "Create settings interface for:\n- Audio controls\n- Graphics options\n- Controls configuration\n- Accessibility options",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Setup rendering pipeline",
           "body": "Configure the graphics rendering pipeline",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Add camera system",
           "body": "Implement camera controls and movement",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Create visual effects system",
           "body": "Add system for particle effects and visual feedback",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Add animation system",
           "body": "Implement character and object animation support",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         },
         {
           "title": "Add loading screens",
           "body": "Create loading screens with tips or progress indicators",
-          "labels": ["enhancement", "art"]
+          "labels": [
+            "enhancement",
+            "Art"
+          ]
         }
       ]
     },
-    "audio": {
-      "name": "audio",
+    "Audio": {
+      "name": "Audio",
       "description": "Sound effects and music systems",
       "templates": [
         {
           "title": "Implement audio system",
           "body": "Create audio manager for playing sounds and music:\n- Sound effects\n- Background music\n- Volume controls",
-          "labels": ["enhancement", "audio"]
+          "labels": [
+            "enhancement",
+            "Audio"
+          ]
         },
         {
           "title": "Add sound effects",
           "body": "Implement sound effects for game actions and events",
-          "labels": ["enhancement", "audio"]
+          "labels": [
+            "enhancement",
+            "Audio"
+          ]
         },
         {
           "title": "Add background music",
           "body": "Implement background music system with track management",
-          "labels": ["enhancement", "audio"]
+          "labels": [
+            "enhancement",
+            "Audio"
+          ]
         }
       ]
     },
-    "qa": {
+    "QA": {
       "name": "QA",
       "description": "Quality assurance, testing, debugging, and polish",
       "templates": [
         {
           "title": "Add unit tests for core systems",
           "body": "Create unit tests for fundamental game logic",
-          "labels": ["enhancement", "qa"]
+          "labels": [
+            "enhancement",
+            "QA"
+          ]
         },
         {
           "title": "Implement automated testing",
           "body": "Setup automated test suite for continuous integration",
-          "labels": ["enhancement", "qa"]
+          "labels": [
+            "enhancement",
+            "QA"
+          ]
         },
         {
           "title": "Create debug mode",
           "body": "Add debug mode with developer tools and console",
-          "labels": ["enhancement", "qa"]
+          "labels": [
+            "enhancement",
+            "QA"
+          ]
         },
         {
           "title": "Performance optimization",
           "body": "Profile and optimize game performance",
-          "labels": ["enhancement", "qa"]
+          "labels": [
+            "enhancement",
+            "QA"
+          ]
         },
         {
           "title": "Bug fixing and stability",
           "body": "Final pass to fix remaining bugs and improve stability",
-          "labels": ["bug", "qa"]
+          "labels": [
+            "bug",
+            "QA"
+          ]
         }
       ]
     },
-    "documentation": {
-      "name": "documentation",
+    "Documentation": {
+      "name": "Documentation",
       "description": "Documentation, guides, and technical writing",
       "templates": [
         {
           "title": "Create game design document",
           "body": "Document game mechanics, features, and design decisions",
-          "labels": ["documentation"]
+          "labels": [
+            "Documentation"
+          ]
         },
         {
           "title": "Write technical documentation",
           "body": "Create technical documentation for code and systems",
-          "labels": ["documentation"]
+          "labels": [
+            "Documentation"
+          ]
         },
         {
           "title": "Create credits screen",
           "body": "Add credits displaying team members and acknowledgments",
-          "labels": ["documentation"]
+          "labels": [
+            "Documentation"
+          ]
         }
       ]
     },
-    "marketing": {
-      "name": "marketing",
+    "Marketing": {
+      "name": "Marketing",
       "description": "Marketing, promotion, and launch activities",
       "templates": [
         {
           "title": "Prepare marketing materials",
           "body": "Create screenshots, trailers, and promotional content",
-          "labels": ["marketing"]
+          "labels": [
+            "Marketing"
+          ]
         },
         {
           "title": "Setup social media presence",
           "body": "Create and setup social media accounts for game promotion",
-          "labels": ["marketing"]
+          "labels": [
+            "Marketing"
+          ]
         },
         {
           "title": "Create press kit",
           "body": "Prepare press kit with game information, screenshots, and assets",
-          "labels": ["marketing"]
+          "labels": [
+            "Marketing"
+          ]
         }
       ]
     },
-    "business": {
-      "name": "business",
+    "Business": {
+      "name": "Business",
       "description": "Business operations, analytics, and project management",
       "templates": [
         {
           "title": "Implement analytics",
           "body": "Add analytics tracking for player behavior and metrics",
-          "labels": ["enhancement", "business"]
+          "labels": [
+            "enhancement",
+            "Business"
+          ]
         },
         {
           "title": "Setup project management",
           "body": "Configure project board and milestone tracking",
-          "labels": ["business"]
+          "labels": [
+            "Business"
+          ]
         },
         {
           "title": "Plan development roadmap",
           "body": "Create development roadmap with milestones and timelines",
-          "labels": ["business"]
+          "labels": [
+            "Business"
+          ]
         }
       ]
     }

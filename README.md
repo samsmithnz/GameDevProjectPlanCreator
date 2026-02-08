@@ -59,7 +59,7 @@ Please read the game design document located at [path-to-your-design-doc]. Then,
 3. Launch & Operations: Marketing campaigns, community management, customer support infrastructure, and post-launch maintenance
 Ensure all issues are tailored to the specific game described in the design document—reference unique features, mechanics, art style, target platforms, and other design-specific requirements when creating issue descriptions
 
-Keep the same JSON structure with 7 categories (programming, art, audio, qa, documentation, marketing, business), but customize the templates to match the specific features and requirements described in my game design document.
+Keep the same JSON structure with 7 categories (Programming, Art, Audio, QA, Documentation, Marketing, Business), but customize the templates to match the specific features and requirements described in my game design document.
 
 For each template, provide:
 - title: A clear, actionable task title
@@ -186,7 +186,7 @@ python setup_game_project.py --owner <github-owner> --repo <github-repo>
 The setup script performs these steps:
 
 1. **Validates inputs** - Checks templates JSON file exists, token is set, repo is accessible
-2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, programming, art, audio, QA, documentation, marketing, business)
+2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, Programming, Art, Audio, QA, Documentation, Marketing, Business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
 4. **Creates project board** - Automatically creates a GitHub Projects V2 board using GraphQL API
 5. **Creates workflow status options with colors** - Adds 6 Kanban workflow status options:
@@ -221,7 +221,7 @@ I have a game design document at [path-to-your-game-design.md].
 Please read my game design document and update the templates/issue-templates.json file to create game-specific issues based on my game design.
 
 Requirements:
-- Keep the same JSON structure with 7 categories: programming, art, audio, qa, documentation, marketing, business
+- Keep the same JSON structure with 7 categories: Programming, Art, Audio, QA, Documentation, Marketing, Business
 - Customize the templates array in each category to match the specific features and requirements from my game design
 - For each template, provide:
   - title: A clear, actionable task title specific to my game
@@ -254,19 +254,19 @@ The `templates/issue-templates.json` file follows this structure:
 ```json
 {
   "categories": {
-    "programming": {
-      "name": "programming",
+    "Programming": {
+      "name": "Programming",
       "description": "Programming and technical implementation",
       "templates": [
         {
           "title": "Implement core game loop",
           "body": "Create the main game loop that handles:\n- Game state management\n- Update cycle\n- Render cycle",
-          "labels": ["enhancement", "programming"]
+          "labels": ["enhancement", "Programming"]
         }
       ]
     },
-    "art": {
-      "name": "art",
+    "Art": {
+      "name": "Art",
       "templates": [ ... ]
     }
   }
@@ -290,13 +290,13 @@ See `templates/issue-templates.json` for the default generic template structure.
 
 The tool creates 7 milestones that organize all development work:
 
-1. **programming** - Programming and technical implementation (core mechanics, AI, networking, etc.)
-2. **art** - Visual art, graphics, and UI design
-3. **audio** - Sound effects and music systems
+1. **Programming** - Programming and technical implementation (core mechanics, AI, networking, etc.)
+2. **Art** - Visual art, graphics, and UI design
+3. **Audio** - Sound effects and music systems
 4. **QA** - Quality assurance, testing, and debugging
-5. **documentation** - Documentation and technical writing
-6. **marketing** - Marketing and promotional activities
-7. **business** - Business operations and analytics
+5. **Documentation** - Documentation and technical writing
+6. **Marketing** - Marketing and promotional activities
+7. **Business** - Business operations and analytics
 
 Each issue is automatically assigned to the appropriate milestone based on its category.
 
