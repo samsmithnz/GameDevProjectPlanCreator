@@ -355,47 +355,12 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
     owner_id = repo_data['repository']['owner']['id']
     
     # Check if project already exists at owner level
-    # Note: We query owner's projects instead of repository's projects to avoid needing Contents permission
-    query_existing_projects = """
-    query($owner: String!) {
-      repositoryOwner(login: $owner) {
-        ... on User {
-          projectsV2(first: 20) {
-            nodes {
-              id
-              title
-              number
-            }
-          }
-        }
-        ... on Organization {
-          projectsV2(first: 20) {
-            nodes {
-              id
-              title
-              number
-            }
-          }
-        }
-      }
-    }
-    """
-    
-    projects_data = run_graphql_query(token, query_existing_projects, {
-        'owner': owner
-    })
-    
+    # Create the project (skip checking for existing projects to avoid permission issues)
+    # If a project with the same name exists, GitHub will return an error
     project_id = None
     project_number = None
-    for proj in projects_data['repositoryOwner']['projectsV2']['nodes']:
-        if proj['title'] == project_name:
-            project_id = proj['id']
-            project_number = proj['number']
-            print(f"  ✓ ProjectV2 already exists: '{project_name}' (#{project_number})")
-            break
     
-    # Create project if it doesn't exist
-    if not project_id:
+    try:
         mutation_create_project = """
         mutation($ownerId: ID!, $title: String!) {
           createProjectV2(input: {ownerId: $ownerId, title: $title}) {
@@ -433,71 +398,35 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
             'repositoryId': repo_id
         })
         print(f"  ✓ Linked project to repository")
+        
+    except Exception as e:
+        # If project creation fails, it might already exist
+        # We'll continue anyway - user can manually provide project info if needed
+        error_msg = str(e)
+        if "already exists" in error_msg.lower() or "duplicate" in error_msg.lower():
+            print(f"  ! Project '{project_name}' may already exist")
+            print(f"  ! Please ensure you have the 'project' scope in your token")
+            print(f"  ! Skipping project creation and continuing with other setup...")
+        else:
+            print(f"  ! Warning: Could not create project: {error_msg}")
+            print(f"  ! Continuing with labels, milestones, and issues setup...")
     
     # Get existing fields (we need the Status field)
-    query_fields = """
-    query($projectId: ID!) {
-      node(id: $projectId) {
-        ... on ProjectV2 {
-          fields(first: 20) {
-            nodes {
-              ... on ProjectV2SingleSelectField {
-                id
-                name
-                options {
-                  id
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    """
-    
-    fields_data = run_graphql_query(token, query_fields, {'projectId': project_id})
-    
-    # Find or create Status field
-    status_field_id = None
-    existing_options = {}
-    
-    for field in fields_data['node']['fields']['nodes']:
-        if field and field.get('name') == 'Status':
-            status_field_id = field['id']
-            for option in field.get('options', []):
-                existing_options[option['name']] = option['id']
-            break
-    
-    # Create Status field if it doesn't exist
-    option_map = {}
-    
-    if not status_field_id:
-        # Build array of status options with colors
-        status_options_list = []
-        for col_def in PROJECT_COLUMNS:
-            status_options_list.append({
-                'name': col_def['name'],
-                'color': col_def['color'],
-                'description': col_def['description']
-            })
-        
-        # Create field with all options at once (GitHub API requires this)
-        mutation_field_with_options = """
-        mutation($projectId: ID!, $fieldName: String!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
-          createProjectV2Field(input: {
-            projectId: $projectId, 
-            name: $fieldName, 
-            dataType: SINGLE_SELECT,
-            singleSelectOptions: $options
-          }) {
-            projectV2Field {
-              ... on ProjectV2SingleSelectField {
-                id
-                name
-                options {
-                  id
-                  name
+    if project_id:
+        query_fields = """
+        query($projectId: ID!) {
+          node(id: $projectId) {
+            ... on ProjectV2 {
+              fields(first: 20) {
+                nodes {
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    options {
+                      id
+                      name
+                    }
+                  }
                 }
               }
             }
@@ -505,37 +434,91 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
         }
         """
         
-        field_result = run_graphql_query(token, mutation_field_with_options, {
-            'projectId': project_id,
-            'fieldName': 'Status',
-            'options': status_options_list
-        })
+        fields_data = run_graphql_query(token, query_fields, {'projectId': project_id})
         
-        status_field_id = field_result['createProjectV2Field']['projectV2Field']['id']
+        # Find or create Status field
+        status_field_id = None
+        existing_options = {}
         
-        # Build option map from created field
-        for option in field_result['createProjectV2Field']['projectV2Field']['options']:
-            option_map[option['name']] = option['id']
+        for field in fields_data['node']['fields']['nodes']:
+            if field and field.get('name') == 'Status':
+                status_field_id = field['id']
+                for option in field.get('options', []):
+                    existing_options[option['name']] = option['id']
+                break
         
-        print(f"  ✓ Created Status field with {len(PROJECT_COLUMNS)} workflow options")
-        color_list = ', '.join([f"{c['name']} ({c['color'].lower()})" for c in PROJECT_COLUMNS])
-        print(f"  ✓ Automatically set colors: {color_list}")
+        # Create Status field if it doesn't exist
+        option_map = {}
+        
+        if not status_field_id:
+            # Build array of status options with colors
+            status_options_list = []
+            for col_def in PROJECT_COLUMNS:
+                status_options_list.append({
+                    'name': col_def['name'],
+                    'color': col_def['color'],
+                    'description': col_def['description']
+                })
+            
+            # Create field with all options at once (GitHub API requires this)
+            mutation_field_with_options = """
+            mutation($projectId: ID!, $fieldName: String!, $options: [ProjectV2SingleSelectFieldOptionInput!]!) {
+              createProjectV2Field(input: {
+                projectId: $projectId, 
+                name: $fieldName, 
+                dataType: SINGLE_SELECT,
+                singleSelectOptions: $options
+              }) {
+                projectV2Field {
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    options {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+            """
+            
+            field_result = run_graphql_query(token, mutation_field_with_options, {
+                'projectId': project_id,
+                'fieldName': 'Status',
+                'options': status_options_list
+            })
+            
+            status_field_id = field_result['createProjectV2Field']['projectV2Field']['id']
+            
+            # Build option map from created field
+            for option in field_result['createProjectV2Field']['projectV2Field']['options']:
+                option_map[option['name']] = option['id']
+            
+            print(f"  ✓ Created Status field with {len(PROJECT_COLUMNS)} workflow options")
+            color_list = ', '.join([f"{c['name']} ({c['color'].lower()})" for c in PROJECT_COLUMNS])
+            print(f"  ✓ Automatically set colors: {color_list}")
+        else:
+            # Field exists, use existing options
+            for col_name in existing_options:
+                option_map[col_name] = existing_options[col_name]
+            print(f"  ✓ Status field already exists with {len(existing_options)} options")
+        
+        if not dry_run:
+            print(f"  ⚠️  Note: WIP limits must still be set manually in GitHub UI:")
+            for col_def in PROJECT_COLUMNS:
+                if 'limit' in col_def:
+                    print(f"     - {col_def['name']}: max {col_def['limit']}")
+            print()
+        else:
+            print()
+        
+        return project_id, option_map
     else:
-        # Field exists, use existing options
-        for col_name in existing_options:
-            option_map[col_name] = existing_options[col_name]
-        print(f"  ✓ Status field already exists with {len(existing_options)} options")
-    
-    if not dry_run:
-        print(f"  ⚠️  Note: WIP limits must still be set manually in GitHub UI:")
-        for col_def in PROJECT_COLUMNS:
-            if 'limit' in col_def:
-                print(f"     - {col_def['name']}: max {col_def['limit']}")
+        # Project creation failed, return None
+        print(f"  ! Project board setup skipped")
         print()
-    else:
-        print()
-    
-    return project_id, option_map
+        return None, {}
 
 
 def setup_project(repo, milestone_map: Dict, dry_run: bool = False):
