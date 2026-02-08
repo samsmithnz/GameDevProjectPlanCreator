@@ -13,10 +13,13 @@ Prerequisites:
 
 Usage:
     export GITHUB_TOKEN=your_token_here
-    python setup_game_project.py --design-doc <path> --owner <owner> --repo <repo>
+    python setup_game_project.py --owner <owner> --repo <repo>
+    
+    # With custom templates file
+    python setup_game_project.py --templates my-templates.json --owner <owner> --repo <repo>
     
     # Dry run to preview
-    python setup_game_project.py --design-doc <path> --owner <owner> --repo <repo> --dry-run
+    python setup_game_project.py --owner <owner> --repo <repo> --dry-run
 """
 
 import os
@@ -89,13 +92,13 @@ class UserStory:
         return "\n".join(body_parts)
 
 
-def validate_inputs(design_doc: str, owner: str, repo: str, token: str) -> bool:
+def validate_inputs(templates_file: str, owner: str, repo: str, token: str) -> bool:
     """Validate all required inputs."""
     errors = []
     
-    # Check design doc exists
-    if not os.path.exists(design_doc):
-        errors.append(f"Design document not found: {design_doc}")
+    # Check templates file exists
+    if not os.path.exists(templates_file):
+        errors.append(f"Templates file not found: {templates_file}")
     
     # Check token
     if not token:
@@ -116,89 +119,86 @@ def validate_inputs(design_doc: str, owner: str, repo: str, token: str) -> bool:
     return True
 
 
-def parse_user_stories(markdown_file: str) -> List[UserStory]:
-    """Parse user stories from the markdown file."""
-    user_stories = []
+def load_issue_templates(json_file: str) -> List[UserStory]:
+    """Load issue templates from JSON file.
     
-    with open(markdown_file, 'r', encoding='utf-8') as f:
-        content = f.read()
+    Expected format:
+    {
+      "categories": {
+        "programming": {
+          "name": "programming",
+          "description": "...",
+          "templates": [
+            {
+              "title": "Issue title",
+              "body": "Issue description",
+              "labels": ["label1", "label2"]
+            }
+          ]
+        }
+      }
+    }
+    """
+    issues = []
     
-    lines = content.split('\n')
-    i = 0
+    with open(json_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
     
-    while i < len(lines):
-        line = lines[i].strip()
+    # Generate user story ID counter for each category
+    category_counters = {}
+    
+    # Process each category
+    for category_key, category_data in data.get('categories', {}).items():
+        category_name = category_data.get('name', category_key)
+        templates = category_data.get('templates', [])
         
-        # Check if this is a user story line
-        if line.startswith('- **US-'):
-            match = re.match(r'- \*\*([A-Z]+-[A-Z]+-\d+)\*\*: (.+)', line)
-            if match:
-                story_id = match.group(1)
-                title = match.group(2)
-                
-                # Extract category from story ID for milestone
-                parts = story_id.split('-')
-                category_code = parts[1] if len(parts) >= 2 else None
-                
-                # Map category code to milestone
-                category_map = {
-                    'PROG': 'programming',
-                    'ART': 'art',
-                    'AUDIO': 'audio',
-                    'QA': 'QA',
-                    'DOC': 'documentation',
-                    'MKT': 'marketing',
-                    'BUS': 'business',
-                }
-                milestone = category_map.get(category_code, 'programming')
-                
-                # Look ahead for labels and acceptance criteria
-                labels = []
-                acceptance_criteria = []
-                description = title
-                
-                j = i + 1
-                while j < len(lines):
-                    next_line = lines[j].strip()
-                    
-                    if next_line.startswith('- Labels:'):
-                        label_text = next_line.replace('- Labels:', '').strip()
-                        label_text = label_text.replace('`', '')
-                        parsed_labels = [l.strip() for l in label_text.split(',')]
-                        labels = [l for l in parsed_labels if l]
-                        j += 1
-                    elif next_line.startswith('- Acceptance Criteria:'):
-                        j += 1
-                        while j < len(lines):
-                            criteria_line = lines[j].strip()
-                            if criteria_line.startswith('- ') and not criteria_line.startswith('- **US-'):
-                                criterion = criteria_line.lstrip('- ').strip()
-                                if criterion and not criterion.startswith('Labels:'):
-                                    acceptance_criteria.append(criterion)
-                                j += 1
-                            else:
-                                break
-                        break
-                    elif next_line.startswith('- **US-') or next_line == '':
-                        break
-                    else:
-                        j += 1
-                
-                story = UserStory(
-                    story_id=story_id,
-                    title=title,
-                    description=description,
-                    labels=labels,
-                    acceptance_criteria=acceptance_criteria,
-                    milestone=milestone
-                )
-                user_stories.append(story)
-                i = j
-                continue
+        # Initialize counter for this category
+        if category_name not in category_counters:
+            category_counters[category_name] = 1
         
-        i += 1
+        # Map category name to code for story IDs
+        category_code_map = {
+            'programming': 'PROG',
+            'art': 'ART',
+            'audio': 'AUDIO',
+            'qa': 'QA',
+            'documentation': 'DOC',
+            'marketing': 'MKT',
+            'business': 'BUS',
+        }
+        category_code = category_code_map.get(category_name.lower(), 'PROG')
+        
+        # Create UserStory object for each template
+        for template in templates:
+            story_num = category_counters[category_name]
+            story_id = f"US-{category_code}-{story_num:03d}"
+            
+            title = template.get('title', 'Untitled')
+            body = template.get('body', '')
+            labels = template.get('labels', [])
+            
+            # Extract acceptance criteria if present in body (after "Acceptance Criteria:" header)
+            acceptance_criteria = []
+            description = body
+            if 'Acceptance Criteria:' in body:
+                parts = body.split('Acceptance Criteria:')
+                description = parts[0].strip()
+                criteria_text = parts[1].strip()
+                acceptance_criteria = [line.strip('- ').strip() for line in criteria_text.split('\n') if line.strip().startswith('-')]
+            
+            story = UserStory(
+                story_id=story_id,
+                title=title,
+                description=description,
+                labels=labels,
+                acceptance_criteria=acceptance_criteria,
+                milestone=category_name
+            )
+            issues.append(story)
+            
+            category_counters[category_name] += 1
     
-    return user_stories
+    return issues
 
 
 def setup_labels(repo, dry_run: bool = False):
@@ -744,9 +744,9 @@ def main():
         description='Setup complete game development project with issues, milestones, and project board'
     )
     parser.add_argument(
-        '--design-doc',
-        required=True,
-        help='Path to design document with user stories'
+        '--templates',
+        default='templates/issue-templates.json',
+        help='Path to issue templates JSON file (default: templates/issue-templates.json)'
     )
     parser.add_argument(
         '--owner',
@@ -783,7 +783,7 @@ def main():
         print()
     
     print("Validating inputs...")
-    if not validate_inputs(args.design_doc, args.owner, args.repo, token if not args.dry_run else "dry_run"):
+    if not validate_inputs(args.templates, args.owner, args.repo, token if not args.dry_run else "dry_run"):
         sys.exit(1)
     print("✓ All inputs valid\n")
     
@@ -803,20 +803,23 @@ def main():
         print(f"Would connect to: {args.owner}/{args.repo}\n")
         repo = None
     
-    # Parse design document
-    print(f"📄 Parsing design document: {args.design_doc}")
-    user_stories = parse_user_stories(args.design_doc)
+    # Load issue templates from JSON
+    print(f"📄 Loading issue templates from: {args.templates}")
+    user_stories = load_issue_templates(args.templates)
     
     if len(user_stories) == 0:
-        print("❌ No user stories found in design document.")
+        print("❌ No issue templates found in JSON file.")
         print("\nExpected format:")
-        print("- **US-CAT-###**: As a user, I want... so that...")
-        print("  - Labels: `label1`, `label2`")
-        print("  - Acceptance Criteria:")
-        print("    - Criterion 1")
+        print('{')
+        print('  "categories": {')
+        print('    "programming": {')
+        print('      "templates": [{"title": "...", "body": "...", "labels": [...]}]')
+        print('    }')
+        print('  }')
+        print('}')
         sys.exit(1)
     
-    print(f"✓ Found {len(user_stories)} user stories")
+    print(f"✓ Loaded {len(user_stories)} issue templates")
     
     # Show summary by category
     categories = {}

@@ -1,37 +1,88 @@
 # GameDevProjectPlanCreator
 
-A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards, including everything needed to launch - from programming, art, audio, to marketing and business operations. 
+A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards. Uses AI-powered customization via GitHub Copilot to generate game-specific issues from a design document. 
 
 **✨ Use with any repository** - No forking required! Clone this tool once and use it to set up any GitHub repository you have access to.
 
 ## Features
 
-- 📝 Parse user stories from markdown design documents
-- 🎯 Create GitHub issues from user stories
+- 🤖 AI-powered issue generation using GitHub Copilot
+- 📝 Customize issue templates based on your game design document
+- 🎯 Create GitHub issues from JSON templates
 - 🏷️ Automatically set up standardized labels
 - 📊 Create milestones for 7 development categories
-- 📋 Set up project board (with guidance)
+- 📋 Set up GitHub Projects V2 board with Kanban workflow
+- 🎨 Automatic status column colors (blue, yellow, green, red, pink, purple)
 - 🎮 Generic workflow applicable to any game genre
 
 ## Quick Start
 
+Follow these 5 steps to set up your game development project:
+
+### 1. Clone and Install
+
 ```bash
-# 1. Clone and install
 git clone https://github.com/samsmithnz/GameDevProjectPlanCreator.git
 cd GameDevProjectPlanCreator
 pip install -r requirements.txt
-
-# 2. Create your user stories document
-cp examples/user-stories-template.md my-game-user-stories.md
-# Edit my-game-user-stories.md with your game's user stories
-
-# 3. Preview what will be created (dry run)
-python setup_game_project.py --design-doc my-game-user-stories.md --owner your-username --repo your-game --dry-run
-
-# 4. Run the setup
-export GITHUB_TOKEN=your_github_token
-python setup_game_project.py --design-doc my-game-user-stories.md --owner your-username --repo your-game
 ```
+
+### 2. Create Your Game Design Document
+
+Write a high-level description of your game. This can be a simple markdown or text file describing:
+- Game concept and genre
+- Core gameplay mechanics
+- Key features
+- Technical requirements
+- Art and audio needs
+- Marketing and business goals
+
+Save this as `my-game-design.md` (or any name you prefer).
+
+### 3. Create Your GitHub PAT Token
+
+You'll need a GitHub Personal Access Token with the right permissions. See the [Creating a GitHub Personal Access Token](#creating-a-github-personal-access-token) section below for detailed instructions.
+
+Quick summary: Generate a token with `repo` and `project` scopes (Classic token) or Issues + Projects permissions (Fine-grained token).
+
+### 4. Use GitHub Copilot to Update issue-templates.json
+
+Open this repository in VS Code and use GitHub Copilot to customize the `templates/issue-templates.json` file based on your game design document.
+
+In **GitHub Copilot Chat**, use this prompt:
+
+```
+I have a game design document at [path-to-your-design-doc]. Please read it and update the templates/issue-templates.json file to create game-specific issues based on the design.
+
+Keep the same JSON structure with 7 categories (programming, art, audio, qa, documentation, marketing, business), but customize the templates to match the specific features and requirements described in my game design document.
+
+For each template, provide:
+- title: A clear, actionable task title
+- body: Detailed description of what needs to be done
+- labels: Array of relevant labels (include at least the category label)
+
+Make sure the templates are specific to my game while remaining actionable development tasks.
+```
+
+Review and save the updated `templates/issue-templates.json` file.
+
+### 5. Run Preview and Setup
+
+```bash
+# Preview what will be created (dry run)
+python setup_game_project.py --owner your-username --repo your-game-repo --dry-run
+
+# Run the actual setup
+export GITHUB_TOKEN=your_github_token
+python setup_game_project.py --owner your-username --repo your-game-repo
+```
+
+That's it! Your GitHub repository will now have:
+- ✅ Labels (9 standardized)
+- ✅ Milestones (7 categories)
+- ✅ Project board with Kanban workflow (6 status columns with colors)
+- ✅ Issues created from your customized templates
+- ✅ All issues assigned to project in Backlog
 
 ## Installation
 
@@ -115,11 +166,11 @@ The tool requires a GitHub Personal Access Token (PAT) with appropriate permissi
 The tool has one main command that sets up everything:
 
 ```bash
-python setup_game_project.py --design-doc <path-to-user-stories> --owner <github-owner> --repo <github-repo>
+python setup_game_project.py --owner <github-owner> --repo <github-repo>
 ```
 
 **Options:**
-- `--design-doc` (required) - Path to markdown file with user stories
+- `--templates` (optional) - Path to issue templates JSON file (default: `templates/issue-templates.json`)
 - `--owner` (required) - GitHub repository owner
 - `--repo` (required) - GitHub repository name  
 - `--token` (optional) - GitHub PAT token (or use GITHUB_TOKEN env var)
@@ -129,7 +180,7 @@ python setup_game_project.py --design-doc <path-to-user-stories> --owner <github
 
 The setup script performs these steps:
 
-1. **Validates inputs** - Checks design doc exists, token is set, repo is accessible
+1. **Validates inputs** - Checks templates JSON file exists, token is set, repo is accessible
 2. **Sets up labels** - Creates/updates 9 standardized labels (enhancement, bug, programming, art, audio, QA, documentation, marketing, business)
 3. **Creates milestones** - Sets up 7 milestones matching the development categories
 4. **Creates project board** - Automatically creates a GitHub Projects V2 board using GraphQL API
@@ -140,107 +191,95 @@ The setup script performs these steps:
    - **Blocked** - Work that is blocked (red color)
    - **In review** - Work ready for review/QA (pink color)
    - **Done** - Completed work (purple color)
-6. **Creates issues** - Parses user stories and creates GitHub issues with proper labels and milestones
+6. **Creates issues** - Reads templates from JSON and creates GitHub issues with proper labels and milestones
 7. **Assigns issues to project** - Automatically adds each issue to the Projects V2 board with Backlog status
 
 **Note:** WIP (Work In Progress) limits must still be set manually in the GitHub UI (max 5 for On deck, max 3 for In progress, max 5 for Blocked, max 5 for In review). Colors are set automatically via GraphQL API.
 
-### Using GitHub Copilot to Generate User Stories
+### Using GitHub Copilot to Customize Issue Templates
 
-If you have a high-level game description document, you can use GitHub Copilot in your IDE to automatically generate user stories in the required format.
+The power of this tool comes from using GitHub Copilot to customize the issue templates based on your specific game design.
 
 **Steps:**
 
-1. **Open your game description document** in VS Code or your preferred IDE with GitHub Copilot enabled
+1. **Open this repository in VS Code** with GitHub Copilot enabled
 
-2. **Create a new file** for your user stories (e.g., `my-game-user-stories.md`)
+2. **Have your game design document ready** (the document you created in step 2 of Quick Start)
 
-3. **Use GitHub Copilot Chat** with this prompt:
+3. **Open the file** `templates/issue-templates.json` in your editor
+
+4. **Use GitHub Copilot Chat** with this prompt:
 
 ```
-Review this game description document and generate user stories in the following format:
+I have a game design document at [path-to-your-game-design.md]. 
 
-- Use the 7 categories: PROG (programming), ART (art), AUDIO (audio), QA (QA), DOC (documentation), MKT (marketing), BUS (business)
-- Format each story as: **US-CATEGORY-###**: As a [user], I want [goal] so that [benefit]
-- Include Labels and Acceptance Criteria for each story
-- Organize stories by category headings (## Programming, ## Art, etc.)
-- Follow the pattern from this GameDevProjectPlanCreator repository
+Please read my game design document and update the templates/issue-templates.json file to create game-specific issues based on my game design.
 
-Example format:
-## Programming
+Requirements:
+- Keep the same JSON structure with 7 categories: programming, art, audio, qa, documentation, marketing, business
+- Customize the templates array in each category to match the specific features and requirements from my game design
+- For each template, provide:
+  - title: A clear, actionable task title specific to my game
+  - body: Detailed description of what needs to be done for my game
+  - labels: Array of relevant labels (include at least the category label)
+- Remove generic templates that don't apply to my game
+- Add new templates for game-specific features mentioned in my design
+- Keep titles concise and bodies detailed
 
-- **US-PROG-001**: As a player, I want to move my character so that I can explore
-  - Labels: `programming`, `gameplay`, `movement`
-  - Acceptance Criteria:
-    - Character can move in all directions
-    - Movement is smooth and responsive
-
-Generate comprehensive user stories for all features described in the game design document.
+Make the templates specific to my game while remaining actionable development tasks.
 ```
 
-4. **Provide context** by:
-   - Including your game description in the chat
-   - Referencing the `examples/user-stories-template.md` file from this repository
-   - Letting Copilot analyze both files together
+5. **Review the updated JSON** - Copilot will update the issue-templates.json file with game-specific issues
 
-5. **Review and refine** the generated user stories, ensuring:
-   - All category codes are correct (PROG, ART, AUDIO, QA, DOC, MKT, BUS)
-   - Story IDs are sequential within each category
-   - Acceptance criteria are specific and testable
-   - Labels are appropriate for each story
+6. **Save the file** - Make any manual adjustments if needed
 
-6. **Save the output** to your user stories file
-
-7. **Run the setup tool** with your generated user stories:
-```bash
-python setup_game_project.py --design-doc my-game-user-stories.md --owner your-username --repo your-game
-```
+7. **Run the setup tool** (see Quick Start step 5)
 
 **Tips for best results:**
-- Be specific in your game description document (features, mechanics, goals)
-- Include technical requirements and non-functional requirements
-- Mention any specific platforms, engines, or technologies
-- Describe the target audience and key gameplay elements
-- Review and edit the AI-generated stories before running the tool
+- Be detailed in your game design document (features, mechanics, technical requirements)
+- Include specific gameplay elements, art style, audio needs, etc.
+- Mention platforms, game engines, and technologies you'll use
+- Describe multiplayer, progression systems, monetization if applicable
+- The more specific your design doc, the better Copilot's customization
 
-### Design Document Format
+### JSON Template Structure
 
-Create a markdown file with user stories in this format:
+The `templates/issue-templates.json` file follows this structure:
 
-```markdown
-# My Game Project Plan
-
-## Programming
-
-- **US-PROG-001**: As a player, I want to move my character so that I can explore
-  - Labels: `programming`, `gameplay`, `movement`
-  - Acceptance Criteria:
-    - Character can move in all directions
-    - Movement is smooth and responsive
-    - Obstacles block movement
-
-- **US-PROG-002**: As a player, I want to jump over obstacles
-  - Labels: `programming`, `gameplay`
-  - Acceptance Criteria:
-    - Jump button is responsive
-    - Jump height is appropriate
-
-## Art
-
-- **US-ART-001**: As a player, I want appealing character designs
-  - Labels: `art`, `characters`
-  - Acceptance Criteria:
-    - Characters have distinct visual style
-    - Animations are smooth
+```json
+{
+  "categories": {
+    "programming": {
+      "name": "programming",
+      "description": "Programming and technical implementation",
+      "templates": [
+        {
+          "title": "Implement core game loop",
+          "body": "Create the main game loop that handles:\\n- Game state management\\n- Update cycle\\n- Render cycle",
+          "labels": ["enhancement", "programming"]
+        }
+      ]
+    },
+    "art": {
+      "name": "art",
+      "templates": [ ... ]
+    }
+  }
+}
 ```
 
-**Format Rules:**
-- User story IDs: `US-CATEGORY-###` where CATEGORY is PROG, ART, AUDIO, QA, DOC, MKT, or BUS
-- Story format: `As a [user type], I want [goal] so that [benefit]`
-- Labels: Comma-separated in backticks
-- Acceptance Criteria: Bulleted list under the heading
+Each category contains an array of template objects with:
+- **title**: The issue title (concise, actionable)
+- **body**: Detailed description (can include markdown formatting like `\n` for newlines, bullet lists)
+- **labels**: Array of label names to apply (should include the category label at minimum)
 
-See `examples/user-stories-template.md` for a complete template.
+**JSON Format:**
+- Each category has a `templates` array
+- Each template object needs: `title`, `body`, `labels`
+- Labels array should include the category label
+- Body supports markdown and escape sequences like `\n` for newlines
+
+See `templates/issue-templates.json` for the default generic template structure. You'll customize this file with GitHub Copilot based on your game design. You can also use `examples/game-design-template.md` as a starting point for your game design document.
 
 ## Categories & Milestones
 
@@ -254,7 +293,7 @@ The tool creates 7 milestones that organize all development work:
 6. **marketing** - Marketing and promotional activities
 7. **business** - Business operations and analytics
 
-Each user story is automatically assigned to the appropriate milestone based on its category code.
+Each issue is automatically assigned to the appropriate milestone based on its category.
 
 ## Example Workflow
 
@@ -264,19 +303,20 @@ git clone https://github.com/samsmithnz/GameDevProjectPlanCreator.git
 cd GameDevProjectPlanCreator
 pip install -r requirements.txt
 
-# Create your user stories
-cp examples/user-stories-template.md my-rpg-game.md
-# Edit my-rpg-game.md with your game's user stories
+# Write your game design document (my-rpg-design.md)
+
+# Use GitHub Copilot to customize templates/issue-templates.json
+# based on your game design (see step 4 in Quick Start above)
 
 # Preview first (dry run)
-python setup_game_project.py --design-doc my-rpg-game.md --owner myusername --repo my-rpg-game --dry-run
+python setup_game_project.py --owner myusername --repo my-rpg-game --dry-run
 
 # If it looks good, run for real
 export GITHUB_TOKEN=your_token_here
-python setup_game_project.py --design-doc my-rpg-game.md --owner myusername --repo my-rpg-game
+python setup_game_project.py --owner myusername --repo my-rpg-game
 
 # Your repository now has:
-# - All issues created from user stories
+# - All issues created from customized templates
 # - 9 standardized labels
 # - 7 milestones (one per category)
 # - GitHub Projects V2 board with 6 Kanban workflow status options
