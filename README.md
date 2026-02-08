@@ -101,6 +101,64 @@ The setup script performs these steps:
 
 **Note:** WIP (Work In Progress) limits must still be set manually in the GitHub UI (max 5 for On deck, max 3 for In progress, max 5 for Blocked, max 5 for In review). Colors are set automatically via GraphQL API.
 
+### Using GitHub Copilot to Generate User Stories
+
+If you have a high-level game description document, you can use GitHub Copilot in your IDE to automatically generate user stories in the required format.
+
+**Steps:**
+
+1. **Open your game description document** in VS Code or your preferred IDE with GitHub Copilot enabled
+
+2. **Create a new file** for your user stories (e.g., `my-game-user-stories.md`)
+
+3. **Use GitHub Copilot Chat** with this prompt:
+
+```
+Review this game description document and generate user stories in the following format:
+
+- Use the 7 categories: PROG (programming), ART (art), AUDIO (audio), QA (QA), DOC (documentation), MKT (marketing), BUS (business)
+- Format each story as: **US-CATEGORY-###**: As a [user], I want [goal] so that [benefit]
+- Include Labels and Acceptance Criteria for each story
+- Organize stories by category headings (## Programming, ## Art, etc.)
+- Follow the pattern from this GameDevProjectPlanCreator repository
+
+Example format:
+## Programming
+
+- **US-PROG-001**: As a player, I want to move my character so that I can explore
+  - Labels: `programming`, `gameplay`, `movement`
+  - Acceptance Criteria:
+    - Character can move in all directions
+    - Movement is smooth and responsive
+
+Generate comprehensive user stories for all features described in the game design document.
+```
+
+4. **Provide context** by:
+   - Including your game description in the chat
+   - Referencing the `examples/user-stories-template.md` file from this repository
+   - Letting Copilot analyze both files together
+
+5. **Review and refine** the generated user stories, ensuring:
+   - All category codes are correct (PROG, ART, AUDIO, QA, DOC, MKT, BUS)
+   - Story IDs are sequential within each category
+   - Acceptance criteria are specific and testable
+   - Labels are appropriate for each story
+
+6. **Save the output** to your user stories file
+
+7. **Run the setup tool** with your generated user stories:
+```bash
+python setup_game_project.py --design-doc my-game-user-stories.md --owner your-username --repo your-game
+```
+
+**Tips for best results:**
+- Be specific in your game description document (features, mechanics, goals)
+- Include technical requirements and non-functional requirements
+- Mention any specific platforms, engines, or technologies
+- Describe the target audience and key gameplay elements
+- Review and edit the AI-generated stories before running the tool
+
 ### Design Document Format
 
 Create a markdown file with user stories in this format:
