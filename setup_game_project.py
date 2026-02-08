@@ -455,21 +455,28 @@ def setup_project_v2(repo, token: str, owner: str, repo_name: str, dry_run: bool
         
         fields_data = run_graphql_query(token, query_fields, {'projectId': project_id})
         
-        # Find or create Status field
+        # Find Status field - we need to create our own custom one, not use GitHub's default
         status_field_id = None
         existing_options = {}
         
+        # Check if our custom Status field with Backlog exists
+        has_custom_status = False
         for field in fields_data['node']['fields']['nodes']:
             if field and field.get('name') == 'Status':
-                status_field_id = field['id']
+                # Check if this has our custom 'Backlog' option (not GitHub's default 'Todo')
                 for option in field.get('options', []):
-                    existing_options[option['name']] = option['id']
+                    if option['name'] == 'Backlog':
+                        has_custom_status = True
+                        status_field_id = field['id']
+                        for opt in field.get('options', []):
+                            existing_options[opt['name']] = opt['id']
+                        break
                 break
         
-        # Create Status field if it doesn't exist
+        # Create Status field if it doesn't exist or doesn't have our custom options
         option_map = {}
         
-        if not status_field_id:
+        if not has_custom_status:
             # Build array of status options with colors
             status_options_list = []
             for col_def in PROJECT_COLUMNS:
@@ -619,11 +626,6 @@ def create_issues_v2(repo, user_stories: List[UserStory], milestone_map: Dict, p
     
     # Get the Backlog option ID
     backlog_option_id = status_options.get('Backlog') if status_options else None
-    
-    # Debug: show what we received
-    if not dry_run:
-        print(f"  Debug: project_id={project_id is not None}, field_id={field_id is not None}, status_options={list(status_options.keys()) if status_options else None}, backlog_option_id={backlog_option_id is not None}")
-        print()
     
     for story in user_stories:
         try:
