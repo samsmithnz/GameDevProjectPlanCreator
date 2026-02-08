@@ -255,7 +255,7 @@ The `templates/issue-templates.json` file follows this structure:
       "templates": [
         {
           "title": "Implement core game loop",
-          "body": "Create the main game loop that handles:\\n- Game state management\\n- Update cycle\\n- Render cycle",
+          "body": "Create the main game loop that handles:\n- Game state management\n- Update cycle\n- Render cycle",
           "labels": ["enhancement", "programming"]
         }
       ]

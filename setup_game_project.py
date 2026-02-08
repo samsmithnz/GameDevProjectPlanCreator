@@ -184,7 +184,13 @@ def load_issue_templates(json_file: str) -> List[UserStory]:
                 parts = body.split('Acceptance Criteria:')
                 description = parts[0].strip()
                 criteria_text = parts[1].strip()
-                acceptance_criteria = [line.strip('- ').strip() for line in criteria_text.split('\n') if line.strip().startswith('-')]
+                # Parse bullet points - first strip, check if starts with -, then remove the -
+                for line in criteria_text.split('\n'):
+                    line_stripped = line.strip()
+                    if line_stripped.startswith('-'):
+                        criterion = line_stripped.lstrip('- ').strip()
+                        if criterion:
+                            acceptance_criteria.append(criterion)
             
             story = UserStory(
                 story_id=story_id,
