@@ -1,6 +1,6 @@
 # GameDevProjectPlanCreator
 
-A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards. Based on the patterns from the TBS project.
+A Python tool that sets up a complete game development project on GitHub with issues, milestones, and project boards, including everything needed to launch - from programming, art, audio, to marketing and business operations. 
 
 **✨ Use with any repository** - No forking required! Clone this tool once and use it to set up any GitHub repository you have access to.
 
